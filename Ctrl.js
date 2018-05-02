@@ -1,6 +1,7 @@
 var Func =  require("./Func.js");
 var Global = require('./Global.js');
 var Db = require("./Db.js");
+var Game = require("./Game.js");
 var Ctrl = {};
 
 Ctrl.onLoginReq = function(socket, data) {
@@ -34,6 +35,14 @@ Ctrl.onLoginReq = function(socket, data) {
 			socket.sendText(JSON.stringify(backdata));
 		}
 	});
+};
+
+Ctrl.onCreateFKRoomReq = function() {
+	var roomnum = Func.RandomRoomNum();
+
+	if(roomnum > 0) {
+		Game.createRoom(roomnum);
+	}
 };
 
 module.exports = Ctrl;
