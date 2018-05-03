@@ -1,29 +1,47 @@
 var Global = require("./Global.js");
-var Room = require("./Room.js");
+var Table = require("./Table.js");
 
 var Game = {};
 
-Game.rooms = {};
+Game.tables = {};
 
 Game.init = function()
 {
-	for(var i=0; i<Global.ROOM_MAX_NUM; i++) 
+	for(var i=0; i<Global.TABLE_MAX_NUM; i++) 
 	{
-		Game.rooms[i] = new Room();
+		Game.tables[i] = new Table();
 	}
 };
 
-Game.createRoom = function(roomnum) 
+Game.createTable = function(tablenum, uid) 
 {
-	for(var i=0; i<Global.ROOM_MAX_NUM; i++) 
+	for(var i=0; i<Global.TABLE_MAX_NUM; i++) 
 	{
-		var room = this.rooms[i];
-		if(room.status == Room.prototype.STATUS_FREE)
+		var table = this.tables[i];
+		if(table.status == Table.STATUS_FREE)
 		{
-			room.roomnum = roomnum;
-			return room;
+			table.tablenum = tablenum;
+			table.host = uid;
+			table.addPlayer(uid);
+			return table;
 		}
 	}
+};
+
+Game.enterTable = function(tablenum, uid) 
+{
+	for(var i=0; i<Global.TABLE_MAX_NUM; i++) 
+	{
+		var table = this.tables[i];
+		if(table.tablenum == tablenum 
+			&& table.status ==Table.STATUS_HASONE_NO_PLAY
+			&& table.getPlayersNum() < Table.TABLE_MAX_NUM)
+		{
+			table.addPlayer(uid);
+			return table;
+		}
+	}
+	return null;
 };
 
 module.exports = Game;

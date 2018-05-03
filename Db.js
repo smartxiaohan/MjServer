@@ -26,7 +26,11 @@ db.query = function sqlback(sqlstr, callback) {
 			console.log(err);
 			return;
 		}
-		callback(rows, fields);
+
+		if(callback)
+		{
+			callback(rows, fields);
+		}
 	});
 	
 	conn.end(function(err){

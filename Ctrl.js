@@ -20,29 +20,62 @@ Ctrl.onLoginReq = function(socket, data) {
 			find = true;
 
 			var name = row["username"];
-			var password = row["password"];
-			var logindata = {"name": name, "password": password};
+			var uid = row["uid"];
+			var logindata = {"name": name, "uid": uid};
 			var backdata = {"cmd_id":Global.CMD_ID.CMD_ID_LOGIN, "data": JSON.stringify(logindata)};
 			socket.sendText(JSON.stringify(backdata));
 		}
 
 		if(find == false){
-			var sql = "insert into tb_user values('"+self.name+"','777')";
-			Db.query(sql, function(){});
+			Db.query("select * from tb_user order by uid desc limit 1", function(rs, f){
+				for(var r of rs){
+					var uid = r["uid"];
+					uid = uid + 1;
+					var nowtime = new Date().getTime();
+					var password = "123456";
+					var sql = "insert into tb_user values('"+self.name+"','" + password + "','" + uid + "','" +nowtime + "')";
+					Db.query(sql, null);
 
-			var logindata = {"name": self.name, "password": "777"};
-			var backdata = {"cmd_id":Global.CMD_ID.CMD_ID_LOGIN, "data": JSON.stringify(logindata)};
-			socket.sendText(JSON.stringify(backdata));
+					var logindata = {"name": self.name, "uid": uid};
+					var backdata = {"cmd_id":Global.CMD_ID.CMD_ID_LOGIN, "data": JSON.stringify(logindata)};
+					socket.sendText(JSON.stringify(backdata));
+				}
+			});
 		}
 	});
 };
 
-Ctrl.onCreateFKRoomReq = function() {
-	var roomnum = Func.RandomRoomNum();
+Ctrl.onCreateFKTableReq = function(socket, data) {
+	var tablenum = Func.RandomTableNum();
 
-	if(roomnum > 0) {
-		Game.createRoom(roomnum);
+	var createtable_str = data.data;
+	var createtable_data = JSON.parse(createtable_str);
+	var uid = createtable_data.uid;
+
+	if(tablenum > 0) {
+		Game.createTable(tablenum, uid);
+		var createFKTableData = {"tablenum": tablenum};
+		var backdata = {"cmd_id":Global.CMD_ID.CMD_ID_CREATE_FKTABLE, "data": JSON.stringify(createFKTableData)};
+		socket.sendText(JSON.stringify(backdata));
 	}
+};
+
+Ctrl.onJoinFKTableReq = function(socket, data) {
+	var data_str = data.data;
+	var data_json = JSON.parse(data_str);
+	var tablenum = data_json.tablenum;
+	var uid = data_json.uid;
+
+	var table = Game.enterTable(tablenum, uid);
+
+	if(table != null)
+	{
+		var tablestr = JSON.stringify(table);
+		var backdata = {"cmd_id":Global.CMD_ID.CMD_ID_JOIN_FKTABLE, "data": tablestr};
+		socket.sendText(JSON.stringify(backdata));
+	}
+
+	
 };
 
 module.exports = Ctrl;

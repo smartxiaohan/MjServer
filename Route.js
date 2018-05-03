@@ -10,8 +10,11 @@ route.receiveRequest = function receiveRequest(socket, cmd_id, data) {
 		case Global.CMD_ID.CMD_ID_LOGIN:		
 			Ctrl.onLoginReq(socket, data);
 			break;
-		case Global.CMD_ID.CMD_ID_CREATE_FKROOM:
-			Ctrl.onCreateFKRoomReq(socket, data);
+		case Global.CMD_ID.CMD_ID_CREATE_FKTABLE:
+			Ctrl.onCreateFKTableReq(socket, data);
+			break;
+		case  Global.CMD_ID.CMD_ID_JOIN_FKTABLE:
+			Ctrl.onJoinFKTableReq(socket, data);
 			break;
 		default:
 			break;
