@@ -1,11 +1,37 @@
 var Global = {};
 
 Global.INVALID_CARDID = 0;
+Global.MJ_MAX_DEEPTH = 10000;
+Global.MJ_HU_GAINS_ARYSIZE = 100;
+Global.MAX_ANALYSE_UNIT = 7;
+Global.MAX_LAYOUT_NUM = 100;
+Global.MJ_LAYOUT_MOD = 10;
+Global.MJ_WANTIAOTONG_MAX_FACE  = 40;
 
 Global.CMD_ID = {
 	"CMD_ID_LOGIN" : 1000,
 	"CMD_ID_CREATE_FKTABLE": 1001,
 	"CMD_ID_JOIN_FKTABLE": 1002
+};
+
+Global.ACT_TYPE = 
+{
+	"ACT_NULL"		: 0,		//无动作		
+	"ACT_GUO"			: 1,		//取消			
+	"ACT_CHI"			: 2,		//吃	
+	"ACT_PENG"	: 4,		//碰			
+	"ACT_MINGGANG"	: 8,		//明杠			
+	"ACT_BUGANG"		: 16,		//补杠			
+	"ACT_ANGANG"		: 32,		//暗杠			
+	"ACT_TING"		: 64,		//听牌			
+	"ACT_HUA"			: 128,		//补花			
+	"ACT_HU"			: 256,		//胡			
+	"ACT_OUT"			: 512,		//出牌			
+	"ACT_CATCH"		: 1024,		//抓牌	
+};
+
+Global.HUTYPE = {
+	"MJ_HU_NORMAL": 1
 };
 
 Global.ANALYSE_TYPE = {
