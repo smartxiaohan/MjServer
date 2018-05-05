@@ -24,8 +24,16 @@ Game.init = function()
 
 		
 	}	
+	
+	var vecCardIDs = [1,2];
+	var cardID = 9;
+	var vecAction = [];
+	var huDetails = new Calc.HuDetails();
+	var wHuType = 1;
+	
+	Calc.CanHu(vecCardIDs, cardID, vecAction, huDetails, wHuType);
 
-	var test = Calc.IsValidFace(6);
+	//var test = Calc.IsValidFace(6);
 };
 
 Game.createTable = function(tablenum, uid, username) 

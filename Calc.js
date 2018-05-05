@@ -62,16 +62,15 @@ class HuDetails {
 	}
 }
 
+Calc.HuDetails = HuDetails;
+
 Calc.IsValidFace = function(face)
 {
 	if (face >= Global.FACE.MJ_FACE_1WAN && face <= Global.FACE.MJ_FACE_9WAN) return true;
 	if (face >= Global.FACE.MJ_FACE_1TIAO && face <= Global.FACE.MJ_FACE_9TIAO) return true;
 	if (face >= Global.FACE.MJ_FACE_1TONG && face <= Global.FACE.MJ_FACE_9TONG) return true;
-	if (face >= Global.FACE.Global.FACE.MJ_FACE_DONG && face <= Global.FACE.Global.FACE.MJ_FACE_BEI) return true;
-	if (face >= Global.FACE.Global.FACE.MJ_FACE_ZHONG && face <= Global.FACE.Global.FACE.MJ_FACE_BAI) return true;
-
-	var huDetails = new HuDetails();
-	huDetails.count = 9;
+	if (face >= Global.FACE.MJ_FACE_DONG && face <= Global.FACE.MJ_FACE_BEI) return true;
+	if (face >= Global.FACE.MJ_FACE_ZHONG && face <= Global.FACE.MJ_FACE_BAI) return true;
 
 	return false;
 }
@@ -154,15 +153,77 @@ Calc.IsSameCard = function(cardID1, cardID2)
 
 
 
+
 //hucard calculator
-Calc.CalcHuGains(nCardsLay, face, vecAction, huDetails, wHuType)
+
+Calc.CardIDsToFaces = function(vecCardIDs)
+{
+	var vecFaces = [];
+	for (var i=0; i<vecCardIDs.length; i++)
+	{
+		var face = Calc.GetCardFaceByID(vecCardIDs[i]);
+		if (Calc.IsValidFace(face))
+		{
+			vecFaces.push(face);
+		}
+	}
+	return vecFaces;
+}
+
+Calc.CalcCardsLay = function(vecFaces, nLayLen)
+{
+	var nCardsLay = [];
+	for(var j=0; j<nLayLen; j++) {
+		nCardsLay[j] = 0;
+	}
+
+	for (var i=0; i<vecFaces.length; i++)
+	{
+		var face = vecFaces[i];
+		if (Calc.IsValidFace(face)) nCardsLay[face]++;
+	}
+	return nCardsLay;
+}
+
+Calc.CanHu = function(vecCardIDs, cardID, vecAction, huDetails, wHuType)
+{
+	var vecFaces = [];
+	vecFaces = Calc.CardIDsToFaces(vecCardIDs);
+	return Calc._CanHu(vecFaces, Calc.GetCardFaceByID(cardID), vecAction, huDetails, wHuType);
+}
+
+Calc._CanHu = function(vecFaces, face, vecAction, huDetails, wHuType)
+{
+	var	lay = [];
+	lay = Calc.CalcCardsLay(vecFaces, Global.MAX_LAYOUT_NUM);
+
+	if (Global.HU_TYPE.MJ_HU_ZIMO == wHuType && lay[face] > 0)
+	{
+		lay[face]--;  
+	}
+
+	var nHuGains = 0;
+	var huDetails_run = new HuDetails();
+	huDetails_run.reset();
+
+	nHuGains = Calc.CanHuNormal(lay, face, huDetails_run, vecAction, wHuType);
+	if (nHuGains > 0)
+	{
+		huDetails = Func.deepCopy(huDetails_run);
+		return true;
+	}
+	 
+	return false;
+}
+
+Calc.CalcHuGains = function(nCardsLay, face, vecAction, huDetails, wHuType)
 {
 	var gains = 1;
 	return gains;
 }
 
 
-Calc.GetCardRemainsFromLay(nCardsLay, nLayLen)
+Calc.GetCardRemainsFromLay = function(nCardsLay, nLayLen)
 {
 	var nCount = 0;
 	for (var i = 0; i < nLayLen; i++){
@@ -172,7 +233,7 @@ Calc.GetCardRemainsFromLay(nCardsLay, nLayLen)
 }
 
 
-Calc._DecreaseJokerNum(jn, jn2, jokernum1, jokernum2, dec)
+Calc._DecreaseJokerNum = function(jn, jn2, jokernum1, jokernum2, dec)
 {
 	jn = jokernum1;
 	jn2 = jokernum2;
@@ -238,7 +299,7 @@ Calc._DecreaseJokerNum(jn, jn2, jokernum1, jokernum2, dec)
 	return jn, jn2, jokernum1, jokernum2;
 }
 
-Calc._UseJokerNum(jokernum1, jokernum2)
+Calc._UseJokerNum = function(jokernum1, jokernum2)
 {
 	if (jokernum1 > jokernum2)//财神1的数量多
 	{
@@ -279,7 +340,7 @@ Calc._UseJokerNum(jokernum1, jokernum2)
 	return 0, jokernum1, jokernum2;
 }
 
-Calc._HuDetailAddJokerUnit(huDetails, type, jokernum1, jokernum2)
+Calc._HuDetailAddJokerUnit = function(huDetails, type, jokernum1, jokernum2)
 {
 	huDetails.count++;
 	 
@@ -315,14 +376,14 @@ Calc._HuDetailAddJokerUnit(huDetails, type, jokernum1, jokernum2)
 	return huDetails.count;
 }
 
-Calc._RestoreJokerNum(jn, jn2, jokernum1, jokernum2)
+Calc._RestoreJokerNum = function(jn, jn2, jokernum1, jokernum2)
 {
 	jokernum1 = jn;
 	jokernum2 = jn2;
 	return jokernum1,jokernum2;
 }
 
-Calc._HuDetailAddUnit(huDetails, type, index, jokernum1, jokernum2, jokerpos, emptypos)
+Calc._HuDetailAddUnit = function(huDetails, type, index, jokernum1, jokernum2, jokerpos, emptypos)
 {
 	huDetails.count++;
 
@@ -457,7 +518,7 @@ Calc._HuDetailAddUnit(huDetails, type, index, jokernum1, jokernum2, jokerpos, em
 	return huDetails.count;
 }
 
-Calc.HuPerFect(layOrigin, lay, face, vecAction, jokernum1, jokernum2, addpos, huDetailsMax, gains_max, bJiang, huDetailsRun, wHuType, gainsLimit, deepth)
+Calc.HuPerFect = function(layOrigin, lay, face, vecAction, jokernum1, jokernum2, addpos, huDetailsMax, gains_max, bJiang, huDetailsRun, wHuType, gainsLimit, deepth)
 {
 	if (deepth>Global.MJ_MAX_DEEPTH)
 		return 0;//超过递归上限返回

@@ -14,6 +14,15 @@ Global.CMD_ID = {
 	"CMD_ID_JOIN_FKTABLE": 1002
 };
 
+Global.HU_TYPE = 
+{
+	"MJ_HU_FANG"		: 1,	// 放冲
+	"MJ_HU_ZIMO" :2,				// 自摸
+	"MJ_HU_QGNG_MING":3, 		// 抢明杠
+	"MJ_HU_QGNG_AN":4,			// 抢碰杠
+	"MJ_HU_QGNG_BU":5,			// 抢补杠
+};
+
 Global.ACT_TYPE = 
 {
 	"ACT_NULL"		: 0,		//无动作		
