@@ -15,15 +15,25 @@ Func.RandomBetween = function(min, max) {
 };
 
 //deep copy
-Func.deepCopy = function(obj){
+Func.DeepCopy = function(obj){
     if(typeof obj != 'object'){
         return obj;
     }
     var newobj = {};
     for ( var attr in obj) {
-        newobj[attr] = deepCopy(obj[attr]);
+        newobj[attr] = Func.DeepCopy(obj[attr]);
     }
     return newobj;
+}
+
+Func.TestArr = function(arr) {
+    for(var i=0; i<arr.length; i++) {
+        arr[i] = arr[i] + 1;
+    }
+}
+
+Func.TestInt = function(val) {
+   val.value = val.value + 1;
 }
 
 module.exports = Func;

@@ -25,13 +25,23 @@ Game.init = function()
 		
 	}	
 	
-	var vecCardIDs = [1,2];
-	var cardID = 9;
-	var vecAction = [];
-	var huDetails = new Calc.HuDetails();
-	var wHuType = 1;
-	
-	Calc.CanHu(vecCardIDs, cardID, vecAction, huDetails, wHuType);
+	// var vecCardIDs = [1,10,19,2,11,20,3,12,21,4,13,22, 37,46];
+	// var cardID = new Object;
+	// cardID.value = 10;
+ 
+	// var vecAction = [];
+	// var huDetails = new Calc.HuDetails();
+	// var wHuType = Global.HU_TYPE.MJ_HU_ZIMO;
+
+	// Func.TestArr(vecCardIDs);
+	// console.log(vecCardIDs);
+
+	// Func.TestInt(cardID);
+	// console.log(cardID);
+	// for(var i=0; i<100; i++)
+	// Game.tables[0].getCalc().CanHu(vecCardIDs, cardID, vecAction, huDetails, wHuType);
+
+	// var j=0;
 
 	//var test = Calc.IsValidFace(6);
 };

@@ -7,7 +7,7 @@ db.query = function sqlback(sqlstr, callback) {
 		host:'localhost',
 		user:'root',
 		password:'123456',
-		database:'zjgame',
+		database:'MjGame',
 		port:3306
 	});
 	

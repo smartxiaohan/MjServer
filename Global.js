@@ -1,12 +1,14 @@
 var Global = {};
 
 Global.INVALID_CARDID = 0;
+Global.INVALID_FACE = 0;
 Global.MJ_MAX_DEEPTH = 10000;
 Global.MJ_HU_GAINS_ARYSIZE = 100;
 Global.MAX_ANALYSE_UNIT = 7;
 Global.MAX_LAYOUT_NUM = 100;
 Global.MJ_LAYOUT_MOD = 10;
 Global.MJ_WANTIAOTONG_MAX_FACE  = 40;
+Global.MJ_HU_FLAGS_ARYSIZE = 4;
 
 Global.CMD_ID = {
 	"CMD_ID_LOGIN" : 1000,

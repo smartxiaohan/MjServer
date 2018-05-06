@@ -33,7 +33,7 @@ Ctrl.onLoginReq = function(socket, data) {
 					uid = uid + 1;
 					var nowtime = new Date().getTime();
 					var password = "123456";
-					var sql = "insert into tb_user values('"+self.name+"','" + password + "','" + uid + "','" +nowtime + "')";
+					var sql = "insert into tb_user values('"+uid+"','" + self.name + "','" + password + "','" +nowtime + "')";
 					Db.query(sql, null);
 
 					var logindata = {"name": self.name, "uid": uid};

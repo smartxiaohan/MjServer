@@ -34,7 +34,7 @@ var Global = require("./Global.js");
 var Func = require("./Func.js");
 var Config = require("./Config.js");
 
-var Calc = {};
+
 
 class AnalyseUnit {
 	constructor() {
@@ -54,17 +54,44 @@ class HuDetails {
 
 	reset() {
 		this.dwHuFlags = [];
+		for(var i=0; i<Global.MJ_HU_FLAGS_ARYSIZE; i++) {
+			this.dwHuFlags[i] = 0;
+		}
+
 		this.nHuGains = [];
+		for(var i=0; i<Global.MJ_HU_GAINS_ARYSIZE; i++) {
+			this.nHuGains[i] = 0;
+		}
 		this.nSubGains = [];
+		for(var i=0; i<Global.MJ_HU_GAINS_ARYSIZE; i++) {
+			this.nSubGains[i] = 0;
+		}
 		
 		this.count = 0;
 		this.analyse = [];
+
+		for(var i=0; i<Global.MAX_ANALYSE_UNIT; i++) {
+			this.analyse[i] = new AnalyseUnit();
+		}
 	}
 }
 
 Calc.HuDetails = HuDetails;
 
-Calc.IsValidFace = function(face)
+function Calc() {
+	this.m_JokerFace1 = Global.INVALID_FACE;
+	this.m_JokerFace2 = Global.INVALID_FACE;
+}
+
+Calc.prototype.setJoker1 = function(joker) {
+	this.m_JokerFace1 = joker;
+}
+
+Calc.prototype.setJoker2 = function(joker) {
+	this.m_JokerFace2 = joker;
+}
+
+Calc.prototype.IsValidFace = function(face)
 {
 	if (face >= Global.FACE.MJ_FACE_1WAN && face <= Global.FACE.MJ_FACE_9WAN) return true;
 	if (face >= Global.FACE.MJ_FACE_1TIAO && face <= Global.FACE.MJ_FACE_9TIAO) return true;
@@ -75,7 +102,7 @@ Calc.IsValidFace = function(face)
 	return false;
 }
 
-Calc.GetCardColorByID = function(cardid)
+Calc.prototype.GetCardColorByID = function(cardid)
 {
 	if (cardid > 0 && cardid <= 36){
 		return Global.COLOR.CLR_WAN;   // 万
@@ -106,7 +133,7 @@ Calc.GetCardColorByID = function(cardid)
 	}
 }
 
-Calc.GetCardValueByID = function(cardid)
+Calc.prototype.GetCardValueByID = function(cardid)
 {
 	if (cardid > 0 && cardid <= 108){
 		return (cardid - 1) % 9 + 1;
@@ -131,7 +158,7 @@ Calc.GetCardValueByID = function(cardid)
 	}
 }
 
-Calc.GetCardFaceByID = function(cardid)
+Calc.prototype.GetCardFaceByID = function(cardid)
 {
 	var color = this.GetCardColorByID(cardid);
 	var value = this.GetCardValueByID(cardid);
@@ -139,11 +166,11 @@ Calc.GetCardFaceByID = function(cardid)
 	return this.MakeFace(color, value);
 }
 
-Calc.MakeFace = function(color, value) {
+Calc.prototype.MakeFace = function(color, value) {
 	return color * 10 + value;
 }
 
-Calc.IsSameCard = function(cardID1, cardID2)
+Calc.prototype.IsSameCard = function(cardID1, cardID2)
 {
 	if (Global.INVALID_CARDID == cardID1 || Global.INVALID_CARDID == cardID2)
 		return false;
@@ -156,13 +183,13 @@ Calc.IsSameCard = function(cardID1, cardID2)
 
 //hucard calculator
 
-Calc.CardIDsToFaces = function(vecCardIDs)
+Calc.prototype.CardIDsToFaces = function(vecCardIDs)
 {
 	var vecFaces = [];
 	for (var i=0; i<vecCardIDs.length; i++)
 	{
-		var face = Calc.GetCardFaceByID(vecCardIDs[i]);
-		if (Calc.IsValidFace(face))
+		var face = this.GetCardFaceByID(vecCardIDs[i]);
+		if (this.IsValidFace(face))
 		{
 			vecFaces.push(face);
 		}
@@ -170,7 +197,7 @@ Calc.CardIDsToFaces = function(vecCardIDs)
 	return vecFaces;
 }
 
-Calc.CalcCardsLay = function(vecFaces, nLayLen)
+Calc.prototype.CalcCardsLay = function(vecFaces, nLayLen)
 {
 	var nCardsLay = [];
 	for(var j=0; j<nLayLen; j++) {
@@ -180,22 +207,22 @@ Calc.CalcCardsLay = function(vecFaces, nLayLen)
 	for (var i=0; i<vecFaces.length; i++)
 	{
 		var face = vecFaces[i];
-		if (Calc.IsValidFace(face)) nCardsLay[face]++;
+		if (this.IsValidFace(face)) nCardsLay[face]++;
 	}
 	return nCardsLay;
 }
 
-Calc.CanHu = function(vecCardIDs, cardID, vecAction, huDetails, wHuType)
+Calc.prototype.CanHu = function(vecCardIDs, cardID, vecAction, huDetails, wHuType)
 {
 	var vecFaces = [];
-	vecFaces = Calc.CardIDsToFaces(vecCardIDs);
-	return Calc._CanHu(vecFaces, Calc.GetCardFaceByID(cardID), vecAction, huDetails, wHuType);
+	vecFaces = this.CardIDsToFaces(vecCardIDs);
+	return this._CanHu(vecFaces, this.GetCardFaceByID(cardID), vecAction, huDetails, wHuType);
 }
 
-Calc._CanHu = function(vecFaces, face, vecAction, huDetails, wHuType)
+Calc.prototype._CanHu = function(vecFaces, face, vecAction, huDetails, wHuType)
 {
 	var	lay = [];
-	lay = Calc.CalcCardsLay(vecFaces, Global.MAX_LAYOUT_NUM);
+	lay = this.CalcCardsLay(vecFaces, Global.MAX_LAYOUT_NUM);
 
 	if (Global.HU_TYPE.MJ_HU_ZIMO == wHuType && lay[face] > 0)
 	{
@@ -206,26 +233,108 @@ Calc._CanHu = function(vecFaces, face, vecAction, huDetails, wHuType)
 	var huDetails_run = new HuDetails();
 	huDetails_run.reset();
 
-	nHuGains = Calc.CanHuNormal(lay, face, huDetails_run, vecAction, wHuType);
+	nHuGains = this.CanHuNormal(lay, face, huDetails_run, vecAction, wHuType);
 	if (nHuGains > 0)
 	{
-		huDetails = Func.deepCopy(huDetails_run);
+		huDetails = Func.DeepCopy(huDetails_run);
 		return true;
 	}
 	 
 	return false;
 }
 
-Calc.CalcHuGains = function(nCardsLay, face, vecAction, huDetails, wHuType)
+Calc.prototype.ZeroJoker1 = function(nCardsLay)
 {
-	var gains = 1;
+	if (Config.Joker1 == 0)
+		return 0, nCardsLay;
+
+	var nCount = 0;
+	if (Global.INVALID_FACE != this.m_JokerFace1)
+	{
+		nCount = nCardsLay[this.m_JokerFace1];
+		nCardsLay[m_JokerFace1] = 0;
+	}
+	return nCount, nCardsLay;
+}
+
+Calc.prototype.ZeroJoker2 = function(nCardsLay)
+{
+	if (Config.Joker2 == 0)
+		return 0, nCardsLay;
+
+	var nCount = 0;
+	if (Global.INVALID_FACE != this.m_JokerFace2)
+	{
+		nCount = nCardsLay[m_JokerFace2];
+		nCardsLay[m_JokerFace2] = 0;
+	}
+	return nCount, nCardsLay;
+}
+
+Calc.prototype.CanHuNormal = function(nCardsLay, face, huDetails, vecAction, wHuType)
+{
+	if (Config.CanFangChong == 0 && Global.HU_TYPE.MJ_HU_FANG == wHuType) return 0;
+	
+	if (Config.CanQiangAnGang == 0 && Global.HU_TYPE.MJ_HU_QGNG_AN == wHuType) return 0;
+	if (Config.CanQiangBuGang == 0 && Global.HU_TYPE.MJ_HU_QGNG_BU == wHuType) return 0;
+	if (Config.CanQiangMnGang == 0 && Global.HU_TYPE.MJ_HU_QGNG_MING == wHuType) return 0;
+
+	var bUseJoker1 = Config.Joker1;
+	var bUseJoker2 = Config.Joker2;
+	var bUseFakeJoker = Config.FakeJoker;
+
+	var jokernum1 = 0;
+	var jokernum2 = 0;
+	var addpos = 0;
+	var	lay = []; 
+	lay = nCardsLay.concat();
+
+	if (face > 0)
+	{
+		lay[face]++;
+		addpos = face;
+	}
+
+	jokernum1, lay = this.ZeroJoker1(lay);
+	jokernum2, lay = this.ZeroJoker2(lay);
+
+	 
+	if (bUseFakeJoker)
+	{
+		var fakeJokerFace = Config.FakeJokerFace;
+		lay[m_JokerFace1] = lay[fakeJokerFace];
+		lay[fakeJokerFace] = 0;
+	}
+
+ 
+	var dwResult = 0;
+
+	var huDetailsRun = new HuDetails(); 
+	huDetailsRun.reset();
+
+	var gains_max = new Object;
+	gains_max.value = 0;
+
+	var gainsLimit = 1000;
+
+	var deepth = new Object;
+	deepth.value = 0;
+	 
+	var nRst = this.HuPerFect(nCardsLay, lay, face, vecAction, jokernum1, jokernum2, addpos, huDetails, gains_max, false, huDetailsRun, wHuType, gainsLimit, deepth);
+	return nRst;
+}
+
+Calc.prototype.CalcHuGains = function(nCardsLay, face, vecAction, huDetails, wHuType)
+{
+	var gains = 100;
 	return gains;
 }
 
 
-Calc.GetCardRemainsFromLay = function(nCardsLay, nLayLen)
+Calc.prototype.GetCardRemainsFromLay = function(nCardsLay)
 {
 	var nCount = 0;
+	var nLayLen = Global.MAX_LAYOUT_NUM;
 	for (var i = 0; i < nLayLen; i++){
 		nCount += nCardsLay[i];
 	}
@@ -233,7 +342,7 @@ Calc.GetCardRemainsFromLay = function(nCardsLay, nLayLen)
 }
 
 
-Calc._DecreaseJokerNum = function(jn, jn2, jokernum1, jokernum2, dec)
+Calc.prototype._DecreaseJokerNum = function(jn, jn2, jokernum1, jokernum2, dec)
 {
 	jn = jokernum1;
 	jn2 = jokernum2;
@@ -299,7 +408,7 @@ Calc._DecreaseJokerNum = function(jn, jn2, jokernum1, jokernum2, dec)
 	return jn, jn2, jokernum1, jokernum2;
 }
 
-Calc._UseJokerNum = function(jokernum1, jokernum2)
+Calc.prototype._UseJokerNum = function(jokernum1, jokernum2)
 {
 	if (jokernum1 > jokernum2)//财神1的数量多
 	{
@@ -340,7 +449,7 @@ Calc._UseJokerNum = function(jokernum1, jokernum2)
 	return 0, jokernum1, jokernum2;
 }
 
-Calc._HuDetailAddJokerUnit = function(huDetails, type, jokernum1, jokernum2)
+Calc.prototype._HuDetailAddJokerUnit = function(huDetails, type, jokernum1, jokernum2)
 {
 	huDetails.count++;
 	 
@@ -376,14 +485,14 @@ Calc._HuDetailAddJokerUnit = function(huDetails, type, jokernum1, jokernum2)
 	return huDetails.count;
 }
 
-Calc._RestoreJokerNum = function(jn, jn2, jokernum1, jokernum2)
+Calc.prototype._RestoreJokerNum = function(jn, jn2, jokernum1, jokernum2)
 {
 	jokernum1 = jn;
 	jokernum2 = jn2;
 	return jokernum1,jokernum2;
 }
 
-Calc._HuDetailAddUnit = function(huDetails, type, index, jokernum1, jokernum2, jokerpos, emptypos)
+Calc.prototype._HuDetailAddUnit = function(huDetails, type, index, jokernum1, jokernum2, jokerpos, emptypos)
 {
 	huDetails.count++;
 
@@ -518,24 +627,24 @@ Calc._HuDetailAddUnit = function(huDetails, type, index, jokernum1, jokernum2, j
 	return huDetails.count;
 }
 
-Calc.HuPerFect = function(layOrigin, lay, face, vecAction, jokernum1, jokernum2, addpos, huDetailsMax, gains_max, bJiang, huDetailsRun, wHuType, gainsLimit, deepth)
+Calc.prototype.HuPerFect = function(layOrigin, lay, face, vecAction, jokernum1, jokernum2, addpos, huDetailsMax, gains_max, bJiang, huDetailsRun, wHuType, gainsLimit, deepth)
 {
-	if (deepth>Global.MJ_MAX_DEEPTH)
+	if (deepth.value>Global.MJ_MAX_DEEPTH)
 		return 0;//超过递归上限返回
 
-	deepth++;
+	deepth.value++;
 	var huDetails = new HuDetails();
-	if (!Calc.GetCardRemainsFromLay(lay))//已经没有剩余的牌
+	if (this.GetCardRemainsFromLay(lay) <= 0)//已经没有剩余的牌
 	{
 		if (jokernum1 + jokernum2 == 0 && bJiang==true)//所有财神匹配完毕
 		{
 			huDetailsRun.dwHuFlags[0] = Global.HUTYPE.MJ_HU_NORMAL;
-			var gains = Calc.CalcHuGains(layOrigin, face, vecAction, huDetailsRun, wHuType);
-			if (gains>gains_max)
+			var gains = this.CalcHuGains(layOrigin, face, vecAction, huDetailsRun, wHuType);
+			if (gains>gains_max.value)
 			{
-				gains_max = gains;
+				gains_max.value = gains;
 				//memcpy(&huDetailsMax, &huDetailsRun, sizeof(HuDetails));
-				huDetailsMax = Func.deepCopy(huDetailsRun);
+				huDetailsMax = Func.DeepCopy(huDetailsRun);
 			}
 			//清理
 			for (var j = 0; j<Global.MJ_HU_GAINS_ARYSIZE; j++)
@@ -548,7 +657,7 @@ Calc.HuPerFect = function(layOrigin, lay, face, vecAction, jokernum1, jokernum2,
 				return Global.ACT_TYPE.ACT_HU;
 			else
 			{
-				deepth--;//返回上一层
+				deepth.value--;//返回上一层
 				return 0;
 			}
 		}
@@ -556,44 +665,44 @@ Calc.HuPerFect = function(layOrigin, lay, face, vecAction, jokernum1, jokernum2,
 		if (jokernum1 + jokernum2 >= 3)//剩余财神大于3
 		{
 			var jn, jn2;
-			jn, jn2, jokernum1, jokernum2 = Calc._DecreaseJokerNum(jn, jn2, jokernum1, jokernum2, 3);	// 财神减3
+			jn, jn2, jokernum1, jokernum2 = this._DecreaseJokerNum(jn, jn2, jokernum1, jokernum2, 3);	// 财神减3
 
-			huDetails = Func.deepCopy(huDetailsRun);
-			Calc._HuDetailAddJokerUnit(huDetails, AN_KEZI, jn - jokernum1, jn2 - jokernum2);
-			if (Calc.HuPerFect(layOrigin, lay, face, vecAction, jokernum1, jokernum2, addpos, huDetailsMax, gains_max, bJiang, huDetails, wHuType, gainsLimit, deepth))
+			huDetails = Func.DeepCopy(huDetailsRun);
+			this._HuDetailAddJokerUnit(huDetails, Global.ANALYSE_TYPE.AN_KEZI, jn - jokernum1, jn2 - jokernum2);
+			if (this.HuPerFect(layOrigin, lay, face, vecAction, jokernum1, jokernum2, addpos, huDetailsMax, gains_max.value, bJiang, huDetails, wHuType, gainsLimit, deepth.value))
 			{
 				return Global.ACT_TYPE.ACT_HU;// 如果超过胡牌上限，结束递归
 			}
 			else
-				jokernum1, jokernum2 = Calc._RestoreJokerNum(jn, jn2, jokernum1, jokernum2);
+				jokernum1, jokernum2 = this._RestoreJokerNum(jn, jn2, jokernum1, jokernum2);
 		}
 
 		if (!bJiang && jokernum1 + jokernum2 >= 2)
 		{
 			bJiang = true;					// 设置将牌标志
 			var jn, jn2;
-			jn, jn2, jokernum1, jokernum2 = Calc._DecreaseJokerNum(jn, jn2, jokernum1, jokernum2, 2);	// 财神减2
-			//huDetails = Func.deepCopy(huDetailsRun);
-			huDetails = Func.deepCopy(huDetailsRun);
-			Calc._HuDetailAddJokerUnit(huDetails, Global.ANALYSE_TYPE.AN_DUIZI, jn - jokernum1, jn2 - jokernum2);
-			if (Calc.HuPerFect(layOrigin, lay, face, vecAction, jokernum1, jokernum2, addpos, huDetailsMax, gains_max, bJiang, huDetails, wHuType, gainsLimit, deepth))
+			jn, jn2, jokernum1, jokernum2 = this._DecreaseJokerNum(jn, jn2, jokernum1, jokernum2, 2);	// 财神减2
+			//huDetails = Func.DeepCopy(huDetailsRun);
+			huDetails = Func.DeepCopy(huDetailsRun);
+			this._HuDetailAddJokerUnit(huDetails, Global.ANALYSE_TYPE.AN_DUIZI, jn - jokernum1, jn2 - jokernum2);
+			if (this.HuPerFect(layOrigin, lay, face, vecAction, jokernum1, jokernum2, addpos, huDetailsMax, gains_max.value, bJiang, huDetails, wHuType, gainsLimit, deepth.value))
 			{
 				return Global.ACT_TYPE.ACT_HU;// 如果超过胡牌上限，结束递归
 			}
 			else
 			{
-				jokernum1, jokernum2 = Calc._RestoreJokerNum(jn, jn2, jokernum1, jokernum2);
+				jokernum1, jokernum2 = this._RestoreJokerNum(jn, jn2, jokernum1, jokernum2);
 				bJiang = false;		// 清除将牌标志
 			}
 		}
 
-		if (deepth == 1)
+		if (deepth.value == 1)
 		{
-			return gains_max;
+			return gains_max.value;
 		}
 		else
 		{
-			deepth--;
+			deepth.value--;
 			return 0;//无法匹配,不能胡!
 		}
 
@@ -602,9 +711,9 @@ Calc.HuPerFect = function(layOrigin, lay, face, vecAction, jokernum1, jokernum2,
 	if (jokernum1>0)//递归财神1
 	{
 		jokernum1--;
-		huDetails = Func.deepCopy(huDetailsRun);
+		huDetails = Func.DeepCopy(huDetailsRun);
 		lay[m_JokerFace1]++;
-		if (Calc.HuPerFect(layOrigin, lay, face, vecAction, jokernum1, jokernum2, addpos, huDetailsMax, gains_max, bJiang, huDetails, wHuType, gainsLimit, deepth))
+		if (this.HuPerFect(layOrigin, lay, face, vecAction, jokernum1, jokernum2, addpos, huDetailsMax, gains_max.value, bJiang, huDetails, wHuType, gainsLimit, deepth))
 			return Global.ACT_TYPE.ACT_HU;		// 如果超过胡牌上限，结束递归
 		else
 		{
@@ -616,9 +725,9 @@ Calc.HuPerFect = function(layOrigin, lay, face, vecAction, jokernum1, jokernum2,
 	if (jokernum2>0)//递归财神2
 	{
 		jokernum2--;
-		huDetails = Func.deepCopy(huDetailsRun);
+		huDetails = Func.DeepCopy(huDetailsRun);
 		lay[m_JokerFace2]++;
-		if (Calc.HuPerFect(layOrigin, lay, face, vecAction, jokernum1, jokernum2, addpos, huDetailsMax, gains_max, bJiang, huDetails, wHuType, gainsLimit, deepth))
+		if (this.HuPerFect(layOrigin, lay, face, vecAction, jokernum1, jokernum2, addpos, huDetailsMax, gains_max.value, bJiang, huDetails, wHuType, gainsLimit, deepth))
 			return Global.ACT_TYPE.ACT_HU;		// 如果超过胡牌上限，结束递归
 		else
 		{
@@ -633,9 +742,9 @@ Calc.HuPerFect = function(layOrigin, lay, face, vecAction, jokernum1, jokernum2,
 	if (lay[i] >= 3)
 	{	// 如果当前牌不少于3张
 		lay[i] -= 3;		// 减去3张牌
-		huDetails = Func.deepCopy(huDetailsRun);
-		Calc._HuDetailAddUnit(huDetails, AN_KEZI, i, 0, 0, 0, 0);
-		if (Calc.HuPerFect(layOrigin, lay, face, vecAction, jokernum1, jokernum2, addpos, huDetailsMax, gains_max, bJiang, huDetails, wHuType, gainsLimit, deepth))
+		huDetails = Func.DeepCopy(huDetailsRun);
+		this._HuDetailAddUnit(huDetails, Global.ANALYSE_TYPE.AN_KEZI, i, 0, 0, 0, 0);
+		if (this.HuPerFect(layOrigin, lay, face, vecAction, jokernum1, jokernum2, addpos, huDetailsMax, gains_max, bJiang, huDetails, wHuType, gainsLimit, deepth))
 			return Global.ACT_TYPE.ACT_HU;		// 如果超过胡牌上限，结束递归
 		else
 		{
@@ -648,15 +757,15 @@ Calc.HuPerFect = function(layOrigin, lay, face, vecAction, jokernum1, jokernum2,
 	{ // 如果当前牌不少于2张并且有财神
 		lay[i] -= 2;		// 减去2张牌
 		var jn, jn2;
-		jn, jn2, jokernum1, jokernum2 = Calc._DecreaseJokerNum(jn, jn2, jokernum1, jokernum2, 1);		// 财神减1	
-		huDetails = Func.deepCopy(huDetailsRun);
-		Calc._HuDetailAddUnit(huDetails, AN_KEZI, i, jn - jokernum1, jn2 - jokernum2, 0, 0);
-		if (Calc.HuPerFect(layOrigin, lay, face, vecAction, jokernum1, jokernum2, addpos, huDetailsMax, gains_max, bJiang, huDetails, wHuType, gainsLimit, deepth))
+		jn, jn2, jokernum1, jokernum2 = this._DecreaseJokerNum(jn, jn2, jokernum1, jokernum2, 1);		// 财神减1	
+		huDetails = Func.DeepCopy(huDetailsRun);
+		this._HuDetailAddUnit(huDetails, Global.ANALYSE_TYPE.AN_KEZI, i, jn - jokernum1, jn2 - jokernum2, 0, 0);
+		if (this.HuPerFect(layOrigin, lay, face, vecAction, jokernum1, jokernum2, addpos, huDetailsMax, gains_max, bJiang, huDetails, wHuType, gainsLimit, deepth))
 			return Global.ACT_TYPE.ACT_HU;		// 如果剩余的牌组合成功，胡牌
 		else
 		{
 			lay[i] += 2; // 取消3张组合
-			jokernum1, jokernum2 = Calc._RestoreJokerNum(jn, jn2, jokernum1, jokernum2);
+			jokernum1, jokernum2 = this._RestoreJokerNum(jn, jn2, jokernum1, jokernum2);
 		}
 	}
 
@@ -665,50 +774,50 @@ Calc.HuPerFect = function(layOrigin, lay, face, vecAction, jokernum1, jokernum2,
 	{ // 如果当前牌不少于1张并且有2张以上财神
 		lay[i]--; 	// 牌数减1
 		var jn, jn2;
-		jn, jn2, jokernum1, jokernum2 = Calc._DecreaseJokerNum(jn, jn2, jokernum1, jokernum2, 2);	// 财神减2
+		jn, jn2, jokernum1, jokernum2 = this._DecreaseJokerNum(jn, jn2, jokernum1, jokernum2, 2);	// 财神减2
 
-		huDetails = Func.deepCopy(huDetailsRun);
-		Calc._HuDetailAddUnit(huDetails, AN_KEZI, i, jn - jokernum1, jn2 - jokernum2,  0, 0);
-		if (Calc.HuPerFect(layOrigin, lay, face, vecAction, jokernum1, jokernum2, addpos, huDetailsMax, gains_max, bJiang, huDetails, wHuType, gainsLimit, deepth))
+		huDetails = Func.DeepCopy(huDetailsRun);
+		this._HuDetailAddUnit(huDetails, Global.ANALYSE_TYPE.AN_KEZI, i, jn - jokernum1, jn2 - jokernum2,  0, 0);
+		if (this.HuPerFect(layOrigin, lay, face, vecAction, jokernum1, jokernum2, addpos, huDetailsMax, gains_max, bJiang, huDetails, wHuType, gainsLimit, deepth))
 			return Global.ACT_TYPE.ACT_HU; // 如果剩余的牌组合成功 胡牌
 		else
 		{
 			lay[i]++; //恢复牌数
-			jokernum1, jokernum2 = Calc._RestoreJokerNum(jn, jn2, jokernum1, jokernum2);
+			jokernum1, jokernum2 = this._RestoreJokerNum(jn, jn2, jokernum1, jokernum2);
 		}
 	}
 
 	// 2张组合(将牌: 2张一样)
 	if (!bJiang && lay[i] >= 2)
 	{ // 如果之前没有将牌，且当前牌不少于2张
-		bJiang = TRUE;					// 设置将牌标志
+		bJiang = true;					// 设置将牌标志
 		lay[i] -= 2;				// 减去2张牌
-		huDetails = Func.deepCopy(huDetailsRun);
-		Calc._HuDetailAddUnit(huDetails, Global.ANALYSE_TYPE.AN_DUIZI, i, 0, 0, 0, 0);
-		if (Calc.HuPerFect(layOrigin, lay, face, vecAction, jokernum1, jokernum2, addpos, huDetailsMax, gains_max, bJiang, huDetails, wHuType, gainsLimit, deepth))
+		huDetails = Func.DeepCopy(huDetailsRun);
+		this._HuDetailAddUnit(huDetails, Global.ANALYSE_TYPE.AN_DUIZI, i, 0, 0, 0, 0);
+		if (this.HuPerFect(layOrigin, lay, face, vecAction, jokernum1, jokernum2, addpos, huDetailsMax, gains_max, bJiang, huDetails, wHuType, gainsLimit, deepth))
 			return Global.ACT_TYPE.ACT_HU;				// 如果剩余的牌组合成功，胡牌
 		else
 		{
 			lay[i] += 2;	// 取消2张组合
-			bJiang = FALSE;		// 清除将牌标志
+			bJiang = false;		// 清除将牌标志
 		}
 	}
 
 	// 2张组合(将牌: 1张 + 财神)
 	if (!bJiang && lay[i] && jokernum1 + jokernum2 > 0) { // 如果之前没有将牌，且当前牌不少于1张并且有财神
-		bJiang = TRUE;					// 设置将牌标志
+		bJiang = true;					// 设置将牌标志
 		lay[i]--;				// 减去1张牌
 		var jn, jn2;
-		jn, jn2, jokernum1, jokernum2 = Calc._DecreaseJokerNum(jn, jn2, jokernum1, jokernum2, 1);	// 财神减1
-		huDetails = Func.deepCopy(huDetailsRun);
-		Calc._HuDetailAddUnit(huDetails, Global.ANALYSE_TYPE.AN_DUIZI, i, jn - jokernum1, jn2 - jokernum2, 0, 0);
-		if (Calc.HuPerFect(layOrigin, lay, face, vecAction, jokernum1, jokernum2, addpos, huDetailsMax, gains_max, bJiang, huDetails, wHuType, gainsLimit, deepth)) {
+		jn, jn2, jokernum1, jokernum2 = this._DecreaseJokerNum(jn, jn2, jokernum1, jokernum2, 1);	// 财神减1
+		huDetails = Func.DeepCopy(huDetailsRun);
+		this._HuDetailAddUnit(huDetails, Global.ANALYSE_TYPE.AN_DUIZI, i, jn - jokernum1, jn2 - jokernum2, 0, 0);
+		if (this.HuPerFect(layOrigin, lay, face, vecAction, jokernum1, jokernum2, addpos, huDetailsMax, gains_max, bJiang, huDetails, wHuType, gainsLimit, deepth)) {
 			return Global.ACT_TYPE.ACT_HU;				// 如果剩余的牌组合成功，胡牌
 		}
 		else{
 			lay[i]++;	// 取消2张组合
-			jokernum1, jokernum2 = Calc._RestoreJokerNum(jn, jn2, jokernum1, jokernum2);
-			bJiang = FALSE;		// 清除将牌标志
+			jokernum1, jokernum2 = this._RestoreJokerNum(jn, jn2, jokernum1, jokernum2);
+			bJiang = false;		// 清除将牌标志
 		}
 	}
 
@@ -720,9 +829,9 @@ Calc.HuPerFect = function(layOrigin, lay, face, vecAction, jokernum1, jokernum2,
 			lay[i]--;
 			lay[i + 1]--;
 			lay[i + 2]--; // 各牌数减1
-			huDetails = Func.deepCopy(huDetailsRun);
-			Calc._HuDetailAddUnit(huDetails, AN_SHUNZI, i, 0, 0, 0, 0);
-			if (Calc.HuPerFect(layOrigin, lay, face, vecAction, jokernum1, jokernum2, addpos, huDetailsMax, gains_max, bJiang, huDetails, wHuType, gainsLimit, deepth)){
+			huDetails = Func.DeepCopy(huDetailsRun);
+			this._HuDetailAddUnit(huDetails, Global.ANALYSE_TYPE.AN_SHUNZI, i, 0, 0, 0, 0);
+			if (this.HuPerFect(layOrigin, lay, face, vecAction, jokernum1, jokernum2, addpos, huDetailsMax, gains_max, bJiang, huDetails, wHuType, gainsLimit, deepth)){
 				return Global.ACT_TYPE.ACT_HU; // 如果剩余的牌组合成功，胡牌
 			}
 			else{
@@ -738,16 +847,16 @@ Calc.HuPerFect = function(layOrigin, lay, face, vecAction, jokernum1, jokernum2,
 			lay[i]--;
 			lay[i + 1]--;	// 各牌数减1
 			var jn, jn2;
-			jn, jn2, jokernum1, jokernum2 = Calc._DecreaseJokerNum(jn, jn2, jokernum1, jokernum2, 1);	// 财神减1
-			huDetails = Func.deepCopy(huDetailsRun);
-			Calc._HuDetailAddUnit(huDetails, AN_SHUNZI, i, jn - jokernum1, jn2 - jokernum2, 2, 0);
-			if (Calc.HuPerFect(layOrigin, lay, face, vecAction, jokernum1, jokernum2, addpos, huDetailsMax, gains_max, bJiang, huDetails, wHuType, gainsLimit, deepth)){
+			jn, jn2, jokernum1, jokernum2 = this._DecreaseJokerNum(jn, jn2, jokernum1, jokernum2, 1);	// 财神减1
+			huDetails = Func.DeepCopy(huDetailsRun);
+			this._HuDetailAddUnit(huDetails, Global.ANALYSE_TYPE.AN_SHUNZI, i, jn - jokernum1, jn2 - jokernum2, 2, 0);
+			if (this.HuPerFect(layOrigin, lay, face, vecAction, jokernum1, jokernum2, addpos, huDetailsMax, gains_max, bJiang, huDetails, wHuType, gainsLimit, deepth)){
 				return Global.ACT_TYPE.ACT_HU; // 如果剩余的牌组合成功，胡牌
 			}
 			else{
 				lay[i]++;
 				lay[i + 1]++; // 恢复各牌数
-				jokernum1, jokernum2 = Calc._RestoreJokerNum(jn, jn2, jokernum1, jokernum2);
+				jokernum1, jokernum2 = this._RestoreJokerNum(jn, jn2, jokernum1, jokernum2);
 			}
 		}
 		// 顺牌组合，牌X + 1张财神 + 牌(X+2)
@@ -757,10 +866,10 @@ Calc.HuPerFect = function(layOrigin, lay, face, vecAction, jokernum1, jokernum2,
 			lay[i]--;
 			lay[i + 2]--;	// 各牌数减1
 			var jn, jn2;
-			jn, jn2, jokernum1, jokernum2 = Calc._DecreaseJokerNum(jn, jn2, jokernum1, jokernum2, 1);	// 财神减1
-			huDetails = Func.deepCopy(huDetailsRun);
-			Calc._HuDetailAddUnit(huDetails, AN_SHUNZI, i, jn - jokernum1, jn2 - jokernum2, 1, 0);
-			if (Calc.HuPerFect(layOrigin, lay, face, vecAction, jokernum1, jokernum2, addpos, huDetailsMax, gains_max, bJiang, huDetails, wHuType, gainsLimit, deepth)){
+			jn, jn2, jokernum1, jokernum2 = this._DecreaseJokerNum(jn, jn2, jokernum1, jokernum2, 1);	// 财神减1
+			huDetails = Func.DeepCopy(huDetailsRun);
+			this._HuDetailAddUnit(huDetails, Global.ANALYSE_TYPE.AN_SHUNZI, i, jn - jokernum1, jn2 - jokernum2, 1, 0);
+			if (this.HuPerFect(layOrigin, lay, face, vecAction, jokernum1, jokernum2, addpos, huDetailsMax, gains_max, bJiang, huDetails, wHuType, gainsLimit, deepth)){
 
 				return Global.ACT_TYPE.ACT_HU; // 如果剩余的牌组合成功，胡牌
 			}
@@ -776,9 +885,9 @@ Calc.HuPerFect = function(layOrigin, lay, face, vecAction, jokernum1, jokernum2,
 			lay[Global.FACE.MJ_FACE_DONG]--;
 			lay[Global.FACE.MJ_FACE_NAN]--;
 			lay[Global.FACE.MJ_FACE_XI]--;
-			huDetails = Func.deepCopy(huDetailsRun);
-			Calc._HuDetailAddUnit(huDetails, AN_SHUNZI, Global.FACE.MJ_FACE_DONG, 0, 0, 0, 0);
-			if (Calc.HuPerFect(layOrigin, lay, face, vecAction, jokernum1, jokernum2, addpos, huDetailsMax, gains_max, bJiang, huDetails, wHuType, gainsLimit, deepth)){
+			huDetails = Func.DeepCopy(huDetailsRun);
+			this._HuDetailAddUnit(huDetails, Global.ANALYSE_TYPE.AN_SHUNZI, Global.FACE.MJ_FACE_DONG, 0, 0, 0, 0);
+			if (this.HuPerFect(layOrigin, lay, face, vecAction, jokernum1, jokernum2, addpos, huDetailsMax, gains_max, bJiang, huDetails, wHuType, gainsLimit, deepth)){
 
 				return Global.ACT_TYPE.ACT_HU; // 如果剩余的牌组合成功，胡牌
 			}
@@ -792,9 +901,9 @@ Calc.HuPerFect = function(layOrigin, lay, face, vecAction, jokernum1, jokernum2,
 			lay[Global.FACE.MJ_FACE_DONG]--;
 			lay[Global.FACE.MJ_FACE_NAN]--;
 			lay[Global.FACE.MJ_FACE_BEI]--;
-			huDetails = Func.deepCopy(huDetailsRun);
-			Calc._HuDetailAddUnit(huDetails, AN_SHUNZI, Global.FACE.MJ_FACE_DONG, 0, 0, 0, 2);
-			if (Calc.HuPerFect(layOrigin, lay, face, vecAction, jokernum1, jokernum2, addpos, huDetailsMax, gains_max, bJiang, huDetails, wHuType, gainsLimit, deepth)){
+			huDetails = Func.DeepCopy(huDetailsRun);
+			this._HuDetailAddUnit(huDetails, Global.ANALYSE_TYPE.AN_SHUNZI, Global.FACE.MJ_FACE_DONG, 0, 0, 0, 2);
+			if (this.HuPerFect(layOrigin, lay, face, vecAction, jokernum1, jokernum2, addpos, huDetailsMax, gains_max, bJiang, huDetails, wHuType, gainsLimit, deepth)){
 
 				return Global.ACT_TYPE.ACT_HU; // 如果剩余的牌组合成功，胡牌
 			}
@@ -808,9 +917,9 @@ Calc.HuPerFect = function(layOrigin, lay, face, vecAction, jokernum1, jokernum2,
 			lay[Global.FACE.MJ_FACE_NAN]--;
 			lay[Global.FACE.MJ_FACE_XI]--;
 			lay[Global.FACE.MJ_FACE_BEI]--;
-			huDetails = Func.deepCopy(huDetailsRun);
-			Calc._HuDetailAddUnit(huDetails, AN_SHUNZI, Global.FACE.MJ_FACE_NAN, 0, 0, 0, 0);
-			if (Calc.HuPerFect(layOrigin, lay, face, vecAction, jokernum1, jokernum2, addpos, huDetailsMax, gains_max, bJiang, huDetails, wHuType, gainsLimit, deepth)){
+			huDetails = Func.DeepCopy(huDetailsRun);
+			this._HuDetailAddUnit(huDetails, Global.ANALYSE_TYPE.AN_SHUNZI, Global.FACE.MJ_FACE_NAN, 0, 0, 0, 0);
+			if (this.HuPerFect(layOrigin, lay, face, vecAction, jokernum1, jokernum2, addpos, huDetailsMax, gains_max, bJiang, huDetails, wHuType, gainsLimit, deepth)){
 				return Global.ACT_TYPE.ACT_HU; // 如果剩余的牌组合成功，胡牌
 			}
 			else{
@@ -823,9 +932,9 @@ Calc.HuPerFect = function(layOrigin, lay, face, vecAction, jokernum1, jokernum2,
 			lay[Global.FACE.MJ_FACE_DONG]--;
 			lay[Global.FACE.MJ_FACE_XI]--;
 			lay[Global.FACE.MJ_FACE_BEI]--;
-			huDetails = Func.deepCopy(huDetailsRun);
-			Calc._HuDetailAddUnit(huDetails, AN_SHUNZI, Global.FACE.MJ_FACE_DONG, 0, 0, 0, 1);
-			if (Calc.HuPerFect(layOrigin, lay, face, vecAction, jokernum1, jokernum2, addpos, huDetailsMax, gains_max, bJiang, huDetails, wHuType, gainsLimit, deepth)){
+			huDetails = Func.DeepCopy(huDetailsRun);
+			this._HuDetailAddUnit(huDetails, Global.ANALYSE_TYPE.AN_SHUNZI, Global.FACE.MJ_FACE_DONG, 0, 0, 0, 1);
+			if (this.HuPerFect(layOrigin, lay, face, vecAction, jokernum1, jokernum2, addpos, huDetailsMax, gains_max, bJiang, huDetails, wHuType, gainsLimit, deepth)){
 				return Global.ACT_TYPE.ACT_HU; // 如果剩余的牌组合成功，胡牌
 			}
 			else{
@@ -838,9 +947,9 @@ Calc.HuPerFect = function(layOrigin, lay, face, vecAction, jokernum1, jokernum2,
 			lay[Global.FACE.MJ_FACE_ZHONG]--;
 			lay[Global.FACE.MJ_FACE_FA]--;
 			lay[Global.FACE.MJ_FACE_BAI]--;
-			huDetails = Func.deepCopy(huDetailsRun);
-			Calc._HuDetailAddUnit(huDetails, AN_SHUNZI, Global.FACE.MJ_FACE_ZHONG, 0, 0, 0, 0);
-			if (Calc.HuPerFect(layOrigin, lay, face, vecAction, jokernum1, jokernum2, addpos, huDetailsMax, gains_max, bJiang, huDetails, wHuType, gainsLimit, deepth)){
+			huDetails = Func.DeepCopy(huDetailsRun);
+			this._HuDetailAddUnit(huDetails, Global.ANALYSE_TYPE.AN_SHUNZI, Global.FACE.MJ_FACE_ZHONG, 0, 0, 0, 0);
+			if (this.HuPerFect(layOrigin, lay, face, vecAction, jokernum1, jokernum2, addpos, huDetailsMax, gains_max, bJiang, huDetails, wHuType, gainsLimit, deepth)){
 				return Global.ACT_TYPE.ACT_HU; // 如果剩余的牌组合成功，胡牌
 			}
 			else{
@@ -853,26 +962,26 @@ Calc.HuPerFect = function(layOrigin, lay, face, vecAction, jokernum1, jokernum2,
 			lay[Global.FACE.MJ_FACE_DONG]--;		// 减去1张牌
 			lay[Global.FACE.MJ_FACE_NAN]--;		// 减去1张牌
 			var jn, jn2;
-			jn, jn2, jokernum1, jokernum2 = Calc._DecreaseJokerNum(jn, jn2, jokernum1, jokernum2, 1);	// 财神减1
-			huDetails = Func.deepCopy(huDetailsRun);
-			Calc._HuDetailAddUnit(huDetails, AN_SHUNZI, Global.FACE.MJ_FACE_DONG, jn - jokernum1, jn2 - jokernum2, 2, 0);
-			if (Calc.HuPerFect(layOrigin, lay, face, vecAction, jokernum1, jokernum2, addpos, huDetailsMax, gains_max, bJiang, huDetails, wHuType, gainsLimit, deepth)) {
+			jn, jn2, jokernum1, jokernum2 = this._DecreaseJokerNum(jn, jn2, jokernum1, jokernum2, 1);	// 财神减1
+			huDetails = Func.DeepCopy(huDetailsRun);
+			this._HuDetailAddUnit(huDetails, Global.ANALYSE_TYPE.AN_SHUNZI, Global.FACE.MJ_FACE_DONG, jn - jokernum1, jn2 - jokernum2, 2, 0);
+			if (this.HuPerFect(layOrigin, lay, face, vecAction, jokernum1, jokernum2, addpos, huDetailsMax, gains_max, bJiang, huDetails, wHuType, gainsLimit, deepth)) {
 				return Global.ACT_TYPE.ACT_HU;		// 如果剩余的牌组合成功，胡牌
 			}
 			else{
 				lay[Global.FACE.MJ_FACE_DONG]++;		// 加1张牌
 				lay[Global.FACE.MJ_FACE_NAN]++;		    // 加1张牌
-				jokernum1, jokernum2 = Calc._RestoreJokerNum(jn, jn2, jokernum1, jokernum2);
+				jokernum1, jokernum2 = this._RestoreJokerNum(jn, jn2, jokernum1, jokernum2);
 			}
 		}
 		if (lay[Global.FACE.MJ_FACE_DONG] && lay[Global.FACE.MJ_FACE_XI] && jokernum1 + jokernum2 > 0){ // 东西
 			lay[Global.FACE.MJ_FACE_DONG]--;		// 减去1张牌
 			lay[Global.FACE.MJ_FACE_XI]--;		// 减去1张牌
 			var jn, jn2;
-			jn, jn2, jokernum1, jokernum2 = Calc._DecreaseJokerNum(jn, jn2, jokernum1, jokernum2, 1);	// 财神减1
-			huDetails = Func.deepCopy(huDetailsRun);
-			Calc._HuDetailAddUnit(huDetails, AN_SHUNZI, Global.FACE.MJ_FACE_DONG, jn - jokernum1, jn2 - jokernum2, 1, 0);
-			if (Calc.HuPerFect(layOrigin, lay, face, vecAction, jokernum1, jokernum2, addpos, huDetailsMax, gains_max, bJiang, huDetails, wHuType, gainsLimit, deepth)) {
+			jn, jn2, jokernum1, jokernum2 = this._DecreaseJokerNum(jn, jn2, jokernum1, jokernum2, 1);	// 财神减1
+			huDetails = Func.DeepCopy(huDetailsRun);
+			this._HuDetailAddUnit(huDetails, Global.ANALYSE_TYPE.AN_SHUNZI, Global.FACE.MJ_FACE_DONG, jn - jokernum1, jn2 - jokernum2, 1, 0);
+			if (this.HuPerFect(layOrigin, lay, face, vecAction, jokernum1, jokernum2, addpos, huDetailsMax, gains_max, bJiang, huDetails, wHuType, gainsLimit, deepth)) {
 
 				return Global.ACT_TYPE.ACT_HU;		// 如果剩余的牌组合成功，胡牌
 			}
@@ -886,27 +995,27 @@ Calc.HuPerFect = function(layOrigin, lay, face, vecAction, jokernum1, jokernum2,
 			lay[Global.FACE.MJ_FACE_DONG]--;		// 减去1张牌
 			lay[Global.FACE.MJ_FACE_BEI]--;		// 减去1张牌
 			var jn, jn2;
-			jn, jn2, jokernum1, jokernum2 = Calc._DecreaseJokerNum(jn, jn2, jokernum1, jokernum2, 1);	// 财神减1
-			huDetails = Func.deepCopy(huDetailsRun);
-			Calc._HuDetailAddUnit(huDetails, AN_SHUNZI, Global.FACE.MJ_FACE_DONG, jn - jokernum1, jn2 - jokernum2, 1, 2);
-			if (Calc.HuPerFect(layOrigin, lay, face, vecAction, jokernum1, jokernum2, addpos, huDetailsMax, gains_max, bJiang, huDetails, wHuType, gainsLimit, deepth)) {
+			jn, jn2, jokernum1, jokernum2 = this._DecreaseJokerNum(jn, jn2, jokernum1, jokernum2, 1);	// 财神减1
+			huDetails = Func.DeepCopy(huDetailsRun);
+			this._HuDetailAddUnit(huDetails, Global.ANALYSE_TYPE.AN_SHUNZI, Global.FACE.MJ_FACE_DONG, jn - jokernum1, jn2 - jokernum2, 1, 2);
+			if (this.HuPerFect(layOrigin, lay, face, vecAction, jokernum1, jokernum2, addpos, huDetailsMax, gains_max, bJiang, huDetails, wHuType, gainsLimit, deepth)) {
 
 				return Global.ACT_TYPE.ACT_HU;		// 如果剩余的牌组合成功，胡牌
 			}
 			else{
 				lay[Global.FACE.MJ_FACE_DONG]++;		// 加1张牌
 				lay[Global.FACE.MJ_FACE_BEI]++;		// 加1张牌
-				jokernum1, jokernum2 = Calc._RestoreJokerNum(jn, jn2, jokernum1, jokernum2);
+				jokernum1, jokernum2 = this._RestoreJokerNum(jn, jn2, jokernum1, jokernum2);
 			}
 		}
 		if (lay[Global.FACE.MJ_FACE_NAN] && lay[Global.FACE.MJ_FACE_XI] && jokernum1 + jokernum2 > 0){ // 南西
 			lay[Global.FACE.MJ_FACE_NAN]--;		// 减去1张牌
 			lay[Global.FACE.MJ_FACE_XI]--;		// 减去1张牌
 			var jn, jn2;
-			jn, jn2, jokernum1, jokernum2 = Calc._DecreaseJokerNum(jn, jn2, jokernum1, jokernum2, 1);	// 财神减1
-			huDetails = Func.deepCopy(huDetailsRun);
-			Calc._HuDetailAddUnit(huDetails, AN_SHUNZI, Global.FACE.MJ_FACE_NAN, jn - jokernum1, jn2 - jokernum2, 2, 0);
-			if (Calc.HuPerFect(layOrigin, lay, face, vecAction, jokernum1, jokernum2, addpos, huDetailsMax, gains_max, bJiang, huDetails, wHuType, gainsLimit, deepth)) {
+			jn, jn2, jokernum1, jokernum2 = this._DecreaseJokerNum(jn, jn2, jokernum1, jokernum2, 1);	// 财神减1
+			huDetails = Func.DeepCopy(huDetailsRun);
+			this._HuDetailAddUnit(huDetails, Global.ANALYSE_TYPE.AN_SHUNZI, Global.FACE.MJ_FACE_NAN, jn - jokernum1, jn2 - jokernum2, 2, 0);
+			if (this.HuPerFect(layOrigin, lay, face, vecAction, jokernum1, jokernum2, addpos, huDetailsMax, gains_max, bJiang, huDetails, wHuType, gainsLimit, deepth)) {
 
 				return Global.ACT_TYPE.ACT_HU;		// 如果剩余的牌组合成功，胡牌
 			}
@@ -920,80 +1029,80 @@ Calc.HuPerFect = function(layOrigin, lay, face, vecAction, jokernum1, jokernum2,
 			lay[Global.FACE.MJ_FACE_NAN]--;		// 减去1张牌
 			lay[Global.FACE.MJ_FACE_BEI]--;		// 减去1张牌
 			var jn, jn2;
-			jn, jn2, jokernum1, jokernum2 = Calc._DecreaseJokerNum(jn, jn2, jokernum1, jokernum2, 1);	// 财神减1
-			huDetails = Func.deepCopy(huDetailsRun);
-			Calc._HuDetailAddUnit(huDetails, AN_SHUNZI, Global.FACE.MJ_FACE_NAN, jn - jokernum1, jn2 - jokernum2, 1, 0);
-			if (Calc.HuPerFect(layOrigin, lay, face, vecAction, jokernum1, jokernum2, addpos, huDetailsMax, gains_max, bJiang, huDetails, wHuType, gainsLimit, deepth)) {
+			jn, jn2, jokernum1, jokernum2 = this._DecreaseJokerNum(jn, jn2, jokernum1, jokernum2, 1);	// 财神减1
+			huDetails = Func.DeepCopy(huDetailsRun);
+			this._HuDetailAddUnit(huDetails, Global.ANALYSE_TYPE.AN_SHUNZI, Global.FACE.MJ_FACE_NAN, jn - jokernum1, jn2 - jokernum2, 1, 0);
+			if (this.HuPerFect(layOrigin, lay, face, vecAction, jokernum1, jokernum2, addpos, huDetailsMax, gains_max, bJiang, huDetails, wHuType, gainsLimit, deepth)) {
 				return Global.ACT_TYPE.ACT_HU;		// 如果剩余的牌组合成功，胡牌
 			}
 			else{
 				lay[Global.FACE.MJ_FACE_NAN]++;		// 加1张牌
 				lay[Global.FACE.MJ_FACE_BEI]++;		// 加1张牌
-				jokernum1, jokernum2 = Calc._RestoreJokerNum(jn, jn2, jokernum1, jokernum2);
+				jokernum1, jokernum2 = this._RestoreJokerNum(jn, jn2, jokernum1, jokernum2);
 			}
 		}
 		if (lay[Global.FACE.MJ_FACE_XI] && lay[Global.FACE.MJ_FACE_BEI] && jokernum1 + jokernum2 > 0){ // 西北
 			lay[Global.FACE.MJ_FACE_XI]--;		// 减去1张牌
 			lay[Global.FACE.MJ_FACE_BEI]--;		// 减去1张牌
 			var jn, jn2;
-			jn, jn2, jokernum1, jokernum2 = Calc._DecreaseJokerNum(jn, jn2, jokernum1, jokernum2, 1);	// 财神减1
-			huDetails = Func.deepCopy(huDetailsRun);
-			Calc._HuDetailAddUnit(huDetails, AN_SHUNZI, Global.FACE.MJ_FACE_XI, jn - jokernum1, jn2 - jokernum2, 0, 0);
-			if (Calc.HuPerFect(layOrigin, lay, face, vecAction, jokernum1, jokernum2, addpos, huDetailsMax, gains_max, bJiang, huDetails, wHuType, gainsLimit, deepth)) {
+			jn, jn2, jokernum1, jokernum2 = this._DecreaseJokerNum(jn, jn2, jokernum1, jokernum2, 1);	// 财神减1
+			huDetails = Func.DeepCopy(huDetailsRun);
+			this._HuDetailAddUnit(huDetails, Global.ANALYSE_TYPE.AN_SHUNZI, Global.FACE.MJ_FACE_XI, jn - jokernum1, jn2 - jokernum2, 0, 0);
+			if (this.HuPerFect(layOrigin, lay, face, vecAction, jokernum1, jokernum2, addpos, huDetailsMax, gains_max, bJiang, huDetails, wHuType, gainsLimit, deepth)) {
 				return Global.ACT_TYPE.ACT_HU;		// 如果剩余的牌组合成功，胡牌
 			}
 			else{
 				lay[Global.FACE.MJ_FACE_XI]++;		// 加1张牌
 				lay[Global.FACE.MJ_FACE_BEI]++;		// 加1张牌
-				jokernum1, jokernum2 = Calc._RestoreJokerNum(jn, jn2, jokernum1, jokernum2);
+				jokernum1, jokernum2 = this._RestoreJokerNum(jn, jn2, jokernum1, jokernum2);
 			}
 		}
 		if (lay[Global.FACE.MJ_FACE_ZHONG] && lay[Global.FACE.MJ_FACE_FA] && jokernum1 + jokernum2 > 0){ // 中发
 			lay[Global.FACE.MJ_FACE_ZHONG]--;		// 减去1张牌
 			lay[Global.FACE.MJ_FACE_FA]--;		// 减去1张牌
 			var jn, jn2;
-			jn, jn2, jokernum1, jokernum2 = Calc._DecreaseJokerNum(jn, jn2, jokernum1, jokernum2, 1);	// 财神减1
-			huDetails = Func.deepCopy(huDetailsRun);
-			Calc._HuDetailAddUnit(huDetails, AN_SHUNZI, Global.FACE.MJ_FACE_ZHONG, jn - jokernum1, jn2 - jokernum2, 2, 0);
-			if (Calc.HuPerFect(layOrigin, lay, face, vecAction, jokernum1, jokernum2, addpos, huDetailsMax, gains_max, bJiang, huDetails, wHuType, gainsLimit, deepth)) {
+			jn, jn2, jokernum1, jokernum2 = this._DecreaseJokerNum(jn, jn2, jokernum1, jokernum2, 1);	// 财神减1
+			huDetails = Func.DeepCopy(huDetailsRun);
+			this._HuDetailAddUnit(huDetails, Global.ANALYSE_TYPE.AN_SHUNZI, Global.FACE.MJ_FACE_ZHONG, jn - jokernum1, jn2 - jokernum2, 2, 0);
+			if (this.HuPerFect(layOrigin, lay, face, vecAction, jokernum1, jokernum2, addpos, huDetailsMax, gains_max, bJiang, huDetails, wHuType, gainsLimit, deepth)) {
 				return Global.ACT_TYPE.ACT_HU;		// 如果剩余的牌组合成功，胡牌
 			}
 			else{
 				lay[Global.FACE.MJ_FACE_ZHONG]++;		// 加1张牌
 				lay[Global.FACE.MJ_FACE_FA]++;		// 加1张牌
-				jokernum1, jokernum2 = Calc._RestoreJokerNum(jn, jn2, jokernum1, jokernum2);
+				jokernum1, jokernum2 = this._RestoreJokerNum(jn, jn2, jokernum1, jokernum2);
 			}
 		}
 		if (lay[Global.FACE.MJ_FACE_ZHONG] && lay[Global.FACE.MJ_FACE_BAI] && jokernum1 + jokernum2 > 0){ // 中白
 			lay[Global.FACE.MJ_FACE_ZHONG]--;		// 减去1张牌
 			lay[Global.FACE.MJ_FACE_BAI]--;		// 减去1张牌
 			var jn, jn2;
-			jn, jn2, jokernum1, jokernum2 = Calc._DecreaseJokerNum(jn, jn2, jokernum1, jokernum2, 1);	// 财神减1
-			huDetails = Func.deepCopy(huDetailsRun);
-			Calc._HuDetailAddUnit(huDetails, AN_SHUNZI, Global.FACE.MJ_FACE_ZHONG, jn - jokernum1, jn2 - jokernum2, 1, 0);
-			if (Calc.HuPerFect(layOrigin, lay, face, vecAction, jokernum1, jokernum2, addpos, huDetailsMax, gains_max, bJiang, huDetails, wHuType, gainsLimit, deepth)) {
+			jn, jn2, jokernum1, jokernum2 = this._DecreaseJokerNum(jn, jn2, jokernum1, jokernum2, 1);	// 财神减1
+			huDetails = Func.DeepCopy(huDetailsRun);
+			this._HuDetailAddUnit(huDetails, Global.ANALYSE_TYPE.AN_SHUNZI, Global.FACE.MJ_FACE_ZHONG, jn - jokernum1, jn2 - jokernum2, 1, 0);
+			if (this.HuPerFect(layOrigin, lay, face, vecAction, jokernum1, jokernum2, addpos, huDetailsMax, gains_max, bJiang, huDetails, wHuType, gainsLimit, deepth)) {
 				return Global.ACT_TYPE.ACT_HU;		// 如果剩余的牌组合成功，胡牌
 			}
 			else{
 				lay[Global.FACE.MJ_FACE_ZHONG]++;		// 加1张牌
 				lay[Global.FACE.MJ_FACE_BAI]++;		// 加1张牌
-				jokernum1, jokernum2 = Calc._RestoreJokerNum(jn, jn2, jokernum1, jokernum2);
+				jokernum1, jokernum2 = this._RestoreJokerNum(jn, jn2, jokernum1, jokernum2);
 			}
 		}
 		if (lay[Global.FACE.MJ_FACE_FA] && lay[Global.FACE.MJ_FACE_BAI] && jokernum1 + jokernum2 > 0){ // 发白
 			lay[Global.FACE.MJ_FACE_FA]--;		// 减去1张牌
 			lay[Global.FACE.MJ_FACE_BAI]--;		// 减去1张牌
 			var jn, jn2;
-			jn, jn2, jokernum1, jokernum2 = Calc._DecreaseJokerNum(jn, jn2, jokernum1, jokernum2, 1);	// 财神减1
-			huDetails = Func.deepCopy(huDetailsRun);
-			Calc._HuDetailAddUnit(huDetails, AN_SHUNZI, Global.FACE.MJ_FACE_FA, jn - jokernum1, jn2 - jokernum2, 0, 0);
-			if (Calc.HuPerFect(layOrigin, lay, face, vecAction, jokernum1, jokernum2, addpos, huDetailsMax, gains_max, bJiang, huDetails, wHuType, gainsLimit, deepth)) {
+			jn, jn2, jokernum1, jokernum2 = this._DecreaseJokerNum(jn, jn2, jokernum1, jokernum2, 1);	// 财神减1
+			huDetails = Func.DeepCopy(huDetailsRun);
+			this._HuDetailAddUnit(huDetails, Global.ANALYSE_TYPE.AN_SHUNZI, Global.FACE.MJ_FACE_FA, jn - jokernum1, jn2 - jokernum2, 0, 0);
+			if (this.HuPerFect(layOrigin, lay, face, vecAction, jokernum1, jokernum2, addpos, huDetailsMax, gains_max, bJiang, huDetails, wHuType, gainsLimit, deepth)) {
 				return Global.ACT_TYPE.ACT_HU;		// 如果剩余的牌组合成功，胡牌
 			}
 			else{
 				lay[Global.FACE.MJ_FACE_FA]++;		// 加1张牌
 				lay[Global.FACE.MJ_FACE_BAI]++;		// 加1张牌
-				jokernum1, jokernum2 = Calc._RestoreJokerNum(jn, jn2, jokernum1, jokernum2);
+				jokernum1, jokernum2 = this._RestoreJokerNum(jn, jn2, jokernum1, jokernum2);
 			}
 		}
 	}
@@ -1001,13 +1110,13 @@ Calc.HuPerFect = function(layOrigin, lay, face, vecAction, jokernum1, jokernum2,
 	// 无法全部组合，不胡！
 
 	//递归完毕，返回最大胡数
-	if (deepth == 1)
+	if (deepth.value == 1)
 	{
-		return gains_max;
+		return gains_max.value;
 	}
 	else
 	{
-		deepth--;
+		deepth.value--;
 		return 0;
 	}
 }

@@ -1,6 +1,7 @@
 var Global = require("./Global.js");
 var Player = require("./Player.js");
 var Func = require("./Func.js");
+var Calc = require("./Calc.js");
 
 function Table() {
 }
@@ -21,8 +22,27 @@ Table.prototype.reset = function() {
 	this.players = [];
 	this.cardids = [];
 	this.initCards();
+
+	this.jokerFace1 = Global.INVALID_FACE;
+	this.jokerFace2 = Global.INVALID_FACE;
+
+	this.calc = new Calc();
+	this.calc.setJoker1(this.jokerFace1);
+	this.calc.setJoker2(this.jokerFace2);
+}
+
+Table.prototype.getCalc = function() {
+	return this.calc;
 }
  
+
+Table.prototype.getJoker1 = function() {
+	return this.jokerFace1;
+}
+
+Table.prototype.getJoker2 = function() {
+	return this.jokerFace2;
+}
 
 Table.prototype.initCards = function() {
 	for(var i=1; i<=136; i++) {
