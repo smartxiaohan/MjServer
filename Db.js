@@ -2,6 +2,21 @@ var mysql = require('mysql');
 
 var db = {};
 
+/*
+////////////// tb_user start /////////////////
+CREATE TABLE `tb_user` (
+  `uid` int(11) NOT NULL DEFAULT '0',
+  `username` varchar(20) NOT NULL,
+  `password` varchar(20) NOT NULL,
+  `createtime` bigint(20) NOT NULL
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+ 
+ALTER TABLE `tb_user`
+  ADD PRIMARY KEY (`uid`);
+  ////////////// tb_user end /////////////////
+  
+*/
+
 db.query = function sqlback(sqlstr, callback) {
 	var conn = mysql.createConnection({
 		host:'localhost',
