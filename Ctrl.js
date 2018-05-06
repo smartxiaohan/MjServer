@@ -54,8 +54,9 @@ Ctrl.onCreateFKTableReq = function(socket, data) {
 	var username = createtable_data.username;
 
 	if(tablenum > 0) {
-		var table = Game.createTable(tablenum, uid, username);
-		var tablestr = JSON.stringify(table);
+		var table = Game.createTable(socket, tablenum, uid, username);
+		var tabledata = table.buildTableData();
+		var tablestr = JSON.stringify(tabledata);
 		var backdata = {"cmd_id":Global.CMD_ID.CMD_ID_CREATE_FKTABLE, "data": tablestr};
 		socket.sendText(JSON.stringify(backdata));
 	}
@@ -68,13 +69,22 @@ Ctrl.onJoinFKTableReq = function(socket, data) {
 	var uid = data_json.uid;
 	var username = data_json.username;
 
-	var table = Game.enterTable(tablenum, uid, username);
+	var table = Game.enterTable(socket, tablenum, uid, username);
 
 	if(table != null)
 	{
-		var tablestr = JSON.stringify(table);
-		var backdata = {"cmd_id":Global.CMD_ID.CMD_ID_JOIN_FKTABLE, "data": tablestr};
-		socket.sendText(JSON.stringify(backdata));
+		//send to players on the table
+		for(var i=0; i<table.players.length; i++) {
+			var player = table.players[i];
+			if(player && player.socket) {
+				var tabledata = table.buildTableData();
+				var tablestr = JSON.stringify(tabledata);
+				var backdata = {"cmd_id":Global.CMD_ID.CMD_ID_JOIN_FKTABLE, "data": tablestr};
+				player.socket.sendText(JSON.stringify(backdata));
+			}
+		}
+
+		
 	}
 
 	

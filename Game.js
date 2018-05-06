@@ -20,7 +20,7 @@ Game.init = function()
 	{
 		Game.tables[i] = new Table();
 		Game.tables[i].reset();
-		Game.tables[i].startGame(); //test code
+		//Game.tables[i].startGame(); //test code
 
 		
 	}	
@@ -46,7 +46,7 @@ Game.init = function()
 	//var test = Calc.IsValidFace(6);
 };
 
-Game.createTable = function(tablenum, uid, username) 
+Game.createTable = function(socket, tablenum, uid, username) 
 {
 	for(var i=0; i<Global.TABLE_MAX_NUM; i++) 
 	{
@@ -55,14 +55,31 @@ Game.createTable = function(tablenum, uid, username)
 		{
 			table.tablenum = tablenum;
 			table.host = uid;
-			table.addPlayer(uid, username);
+			table.addPlayer(socket, uid, username);
 			return table;
 		}
 	}
 };
 
-Game.enterTable = function(tablenum, uid, username) 
+Game.enterTable = function(socket, tablenum, uid, username) 
 {
+	//check if in one of the table
+	for(var i=0; i<Global.TABLE_MAX_NUM; i++) 
+	{
+		var table = this.tables[i];
+		if(table.tablenum == tablenum)
+		{
+			for(var j=0; j<table.players.length; j++) 
+			{
+				if(table.players[j] != null && table.players[j].uid == uid) 
+				{
+					table.players[j].socket = socket;
+					return table;
+				}
+			}
+		}
+	}
+
 	for(var i=0; i<Global.TABLE_MAX_NUM; i++) 
 	{
 		var table = this.tables[i];
@@ -70,7 +87,7 @@ Game.enterTable = function(tablenum, uid, username)
 			&& table.status ==Table.STATUS_HASONE_NO_PLAY
 			&& table.getPlayersNum() < Table.TABLE_MAX_NUM)
 		{
-			table.addPlayer(uid, username);
+			table.addPlayer(socket, uid, username);
 			return table;
 		}
 	}

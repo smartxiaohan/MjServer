@@ -62,9 +62,7 @@ Table.prototype.startGame = function() {
 
 	this.shuffleCards();
 	this.calcBankerBeforeGame();
-	this.dealCards();
-
-	 
+	this.dealCards(); 
 }
 
 Table.prototype.dealCards =  function() {
@@ -90,7 +88,7 @@ Table.prototype.getPlayersNum = function() {
 	return this.players.length
 }
 
-Table.prototype.addPlayer = function(uid,username) {
+Table.prototype.addPlayer = function(socket, uid,username) {
 	for(var i=0; i<this.players.length; i++) {
 		var player = this.players[i];
 		if(player.uid == uid) {
@@ -100,12 +98,40 @@ Table.prototype.addPlayer = function(uid,username) {
 
 	var player = new Player();
 	player.reset();
+	player.socket = socket;
 	player.uid = uid;
 	player.username = username;
 	player.chairno = this.players.length
 	this.players.push(player);
 
 	this.status = Table.STATUS_HASONE_NO_PLAY;
+}
+
+//build data send to client, all table data
+Table.prototype.buildTableData = function() {
+	var tabledata = {};
+
+	tabledata.tablenum = this.tablenum;  
+	tabledata.host = this.host;   
+	tabledata.banker = this.banker;   
+	tabledata.status = this.status;
+
+	tabledata.players = [];
+
+	for(var i=0; i<this.players.length; i++) {
+		var playerdata = new Player();
+		var player = this.players[i];
+
+		playerdata.uid = player.uid;
+		playerdata.username = player.username;
+		playerdata.chairno = player.chairno;  
+
+		playerdata.handcards = Func.CopyArr(player.handcards);
+		tabledata.players.push(playerdata);
+	}
+
+	 
+	return tabledata;
 }
 
 

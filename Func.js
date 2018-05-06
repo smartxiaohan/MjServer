@@ -26,6 +26,10 @@ Func.DeepCopy = function(obj){
     return newobj;
 }
 
+Func.CopyArr = function(arr) {
+    return arr.concat();
+}
+
 Func.TestArr = function(arr) {
     for(var i=0; i<arr.length; i++) {
         arr[i] = arr[i] + 1;

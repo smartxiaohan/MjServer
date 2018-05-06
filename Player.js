@@ -8,6 +8,7 @@ Player.prototype.reset = function() {
 	this.uid = -1;
 	this.username = "";
 	this.chairno = -1;  
+	this.socket = null;
 
 	this.handcards = [];
 }
