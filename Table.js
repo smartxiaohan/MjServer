@@ -128,7 +128,7 @@ Table.prototype.getPlayersNum = function() {
 
 Table.prototype.getPlayerByUid = function(uid) {
 	for(var i=0; i<this.players.length; i++) {
-		var player = table.players[i];
+		var player = this.players[i];
 		if(player && player.uid == uid) {
 			return player;
 		}
@@ -172,7 +172,7 @@ Table.prototype.getNextPlayer= function(player)
 
 Table.prototype.broadcast = function(cmd_id, jsondata) {
 	for(var i=0; i<this.players.length; i++) {
-		var player = table.players[i];
+		var player = this.players[i];
 		if(player && player.socket) {
 			var tablestr = JSON.stringify(jsondata);
 			var backdata = {"cmd_id":cmd_id, "data": tablestr};
@@ -248,6 +248,19 @@ Table.prototype.MoveToNextPlayer = function()
 	this.curPlayer = this.getNextPlayer(this.curPlayer); 
  
 	return this.curPlayer; 
+}
+
+Table.prototype.onPlayerReady = function(uid) {
+	var player = this.getPlayerByUid(uid);
+
+	if(player == null) {
+		return false;
+	}
+
+	player.ready = true;
+	var data = {};
+	data.chairno = player.chairno;
+	this.broadcast(Global.CMD_ID.CMD_ID_READY, data);
 }
 
 Table.prototype.onOutCard = function(uid, cardid) {

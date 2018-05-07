@@ -90,6 +90,13 @@ Game.onJoinFKTable = function(socket, tablenum, uid, username) {
 	}
 }
 
+Game.onReady = function(tablenum, uid) {
+	var table = Game.findTableByNum(tablenum);
+	if(table != null) {
+		table.onPlayerReady(uid);
+	}
+}
+
 Game.enterTable = function(socket, tablenum, uid, username) 
 {
 	//check if in one of the table

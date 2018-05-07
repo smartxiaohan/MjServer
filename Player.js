@@ -12,6 +12,8 @@ Player.prototype.reset = function() {
 	this.socket = null;
 	this.table = null;
 
+	this.ready = false;
+
 	this.dwPGCHFlags = Global.ACT_TYPE.ACT_NULL;
 	this.pass = false;
 

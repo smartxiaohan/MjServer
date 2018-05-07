@@ -17,6 +17,13 @@ route.receiveRequest = function receiveRequest(socket, cmd_id, data) {
 		case  Global.CMD_ID.CMD_ID_JOIN_FKTABLE:
 			Ctrl.onJoinFKTableReq(socket, data);
 			break;
+
+		case  Global.CMD_ID.CMD_ID_READY:
+			Ctrl.onReadyReq(socket, data);
+			break;
+
+
+
 		case  Global.CMD_ID.CMD_ID_OUTCARD:
 			Ctrl.onOutCardReq(socket, data);
 			break;

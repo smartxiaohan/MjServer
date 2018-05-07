@@ -88,6 +88,15 @@ Ctrl.onJoinFKTableReq = function(socket, data) {
 	// }
 };
 
+Ctrl.onReadyReq = function(socket, data) {
+	var data_str = data.data;
+	var data_json = JSON.parse(data_str);
+
+	var tablenum = data_json.tablenum;
+	var uid = data_json.uid;
+	Game.onReady(tablenum, uid);
+}
+
 Ctrl.onOutCardReq = function(socket, data) {
 	var data_str = data.data;
 	var data_json = JSON.parse(data_str);
