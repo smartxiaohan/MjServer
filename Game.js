@@ -16,6 +16,25 @@ Game.init = function()
 		};
 	}
 
+	if(!Array.prototype.indexOf) {
+		Array.prototype.indexOf = function(val) {
+			for (var i = 0; i < this.length; i++) {
+				if (this[i] == val) return i;
+			}
+			return -1;
+		};
+	}
+
+	if(!Array.prototype.remove) {
+		Array.prototype.remove = function(val) {
+			var index = this.indexOf(val);
+			if (index > -1) {
+				this.splice(index, 1);
+			}
+		};
+	}
+	
+
 	for(var i=0; i<Global.TABLE_MAX_NUM; i++) 
 	{
 		Game.tables[i] = new Table();
@@ -61,6 +80,16 @@ Game.createTable = function(socket, tablenum, uid, username)
 	}
 };
 
+Game.onJoinFKTable = function(socket, tablenum, uid, username) {
+	var table = Game.enterTable(socket, tablenum, uid, username);
+
+	if(table != null) {
+		var tabledata = table.buildTableData();
+		var cmd_id = Global.CMD_ID.CMD_ID_JOIN_FKTABLE;
+		table.broadcast(cmd_id, tabledata);
+	}
+}
+
 Game.enterTable = function(socket, tablenum, uid, username) 
 {
 	//check if in one of the table
@@ -93,5 +122,24 @@ Game.enterTable = function(socket, tablenum, uid, username)
 	}
 	return null;
 };
+
+Game.findTableByNum = function(tablenum) {
+	for(var i=0; i<Global.TABLE_MAX_NUM; i++) 
+	{
+		var table = this.tables[i];
+		if(table.tablenum == tablenum)
+		{
+			return  table;
+		}
+	}
+	return null;
+}
+
+Game.onOutCard = function(tablenum, uid, cardid) {
+	var table = Game.findTableByNum(tablenum);
+	if(table != null) {
+		table.onOutCard(uid, cardid);
+	}
+}
 
 module.exports = Game;

@@ -11,11 +11,50 @@ Global.MJ_WANTIAOTONG_MAX_FACE  = 40;
 Global.MJ_HU_FLAGS_ARYSIZE = 4;
 
 Global.CMD_ID = {
+	//////////////base 
 	"CMD_ID_LOGIN" : 1000,
 	"CMD_ID_CREATE_FKTABLE": 1001,
-	"CMD_ID_JOIN_FKTABLE": 1002
+	"CMD_ID_JOIN_FKTABLE": 1002,
+	//////////////base 
+
+
+	//////////////mj
+	"CMD_ID_OUTCARD": 2000,
+	"CMD_ID_CATCHCARD": 2001,
+	"CMD_ID_GUOCARD": 2002,
+	"CMD_ID_CHICARD": 2003,
+	"CMD_ID_PENGCARD": 2004,
+	"CMD_ID_GANGCARD": 2005,
+	"CMD_ID_HUCARD": 2006,
+	/////////////mj
 };
 
+Global.WAITING_STATUS = {
+	"TS_PLAYING" :1,
+	"TS_WAITING_CATCH" : 2,
+	"TS_WAITING_OUT" : 4,
+	"TS_WAITING_QIANG_MINGGANG" : 8,
+	"TS_WAITING_QIANG_ANGANG" : 16,
+	"TS_WAITING_QIANG_BUGANG" : 32,
+};
+
+Global.ACT_TYPE = 
+{
+	"ACT_NULL"		: 0x0000,		//无动作		
+	"ACT_GUO"			: 0x0001,		//取消			
+	"ACT_CHI"			: 0x0002,		//吃	
+	"ACT_PENG"		: 0x0004,		//碰			
+	"ACT_MINGGANG"	: 0x0008,		//明杠			
+	"ACT_BUGANG"		: 0x0010,		//补杠			
+	"ACT_ANGANG"		: 0x0020,		//暗杠			
+	"ACT_TING"		: 0x0040,		//听牌			
+	"ACT_HUA"			: 0x0080,		//补花			
+	"ACT_HU"		: 0x0100,		//胡			
+	"ACT_OUT"			: 0x0200,		//出牌			
+	"ACT_CATCH"		: 0x0400,		//抓牌	
+};
+
+ 
 Global.HU_TYPE = 
 {
 	"MJ_HU_FANG"		: 1,	// 放冲

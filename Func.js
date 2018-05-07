@@ -30,14 +30,17 @@ Func.CopyArr = function(arr) {
     return arr.concat();
 }
 
-Func.TestArr = function(arr) {
-    for(var i=0; i<arr.length; i++) {
-        arr[i] = arr[i] + 1;
-    }
+Func.GetCountOfValInArr = function(arr, val) {
+    var processArr = arr.filter(function(value) {
+        return value == val;
+    })
+    return processArr.length;
 }
 
-Func.TestInt = function(val) {
-   val.value = val.value + 1;
+Func.IS_BIT_SET = function(flags, bit)  {
+    if(bit == (bit & flags)) return true;
+    return false;
 }
+
 
 module.exports = Func;

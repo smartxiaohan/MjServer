@@ -2,6 +2,7 @@ var Global = require("./Global.js");
 var Player = require("./Player.js");
 var Func = require("./Func.js");
 var Calc = require("./Calc.js");
+var Config = require("./Config.js");
 
 function Table() {
 }
@@ -18,6 +19,8 @@ Table.prototype.reset = function() {
 	this.host = -1;  //房主chairno
 	this.banker = -1;  //庄家chairno
 	this.status = Table.STATUS_FREE;
+	this.curPlayer = null;
+	this.m_dwStatus = 0;
 
 	this.players = [];
 	this.cardids = [];
@@ -29,6 +32,46 @@ Table.prototype.reset = function() {
 	this.calc = new Calc();
 	this.calc.setJoker1(this.jokerFace1);
 	this.calc.setJoker2(this.jokerFace2);
+}
+
+Table.prototype.setStatusWhenStart = function()
+{
+	m_dwStatus = Global.WAITING_STATUS.TS_PLAYING;
+	m_dwStatus |= Global.WAITING_STATUS.TS_WAITING_OUT;
+}
+
+Table.prototype.setStatusAfterCatch = function()
+{
+	m_dwStatus &= ~Global.WAITING_STATUS.TS_WAITING_CATCH;
+	m_dwStatus |= Global.WAITING_STATUS.TS_WAITING_OUT;
+}
+
+Table.prototype.setStatusAfterPeng = function()
+{
+	m_dwStatus &= ~Global.WAITING_STATUS.TS_WAITING_CATCH;
+	m_dwStatus |= Global.WAITING_STATUS.TS_WAITING_OUT;
+}
+
+Table.prototype.setStatusAfterGang = function()
+{
+	m_dwStatus &= ~Global.WAITING_STATUS.TS_WAITING_CATCH;
+	m_dwStatus |= Global.WAITING_STATUS.TS_WAITING_OUT;
+}
+
+Table.prototype.setStatusAfterOut = function()
+{
+	m_dwStatus &= ~Global.WAITING_STATUS.TS_WAITING_OUT;
+	m_dwStatus |= Global.WAITING_STATUS.TS_WAITING_CATCH;
+}
+
+Table.prototype.setStatusAfterChi = function()
+{
+	m_dwStatus &= ~Global.WAITING_STATUS.TS_WAITING_CATCH;
+	m_dwStatus |= Global.WAITING_STATUS.TS_WAITING_OUT;
+}
+
+Table.prototype.setCurrentPlayer = function(player) {
+	this.curPlayer = player;
 }
 
 Table.prototype.getCalc = function() {
@@ -55,11 +98,6 @@ Table.prototype.shuffleCards = function() {
 }
 
 Table.prototype.startGame = function() {
-	this.addPlayer("333", "333");
-	this.addPlayer("444", "444");
-	this.addPlayer("222", "222");
-	this.addPlayer("111", "111");
-
 	this.shuffleCards();
 	this.calcBankerBeforeGame();
 	this.dealCards(); 
@@ -88,6 +126,61 @@ Table.prototype.getPlayersNum = function() {
 	return this.players.length
 }
 
+Table.prototype.getPlayerByUid = function(uid) {
+	for(var i=0; i<this.players.length; i++) {
+		var player = table.players[i];
+		if(player && player.uid == uid) {
+			return player;
+		}
+	}
+	return null;
+}
+
+// 获取前一个玩家
+Table.prototype.getPrePlayer = function(player)
+{
+	if(player == null) return null;
+
+	var prePlayerChairno = (player.chairno - 1 + 4) % 4;;
+	
+	for(var i=0; i<this.players.length; i++) {
+		var p = this.players[i];
+		if(p != null && p.chairno == prePlayerChairno) {
+			return p;
+		}
+	}
+
+	return null;
+}
+
+// 获取下一个玩家
+Table.prototype.getNextPlayer= function(player)
+{
+	if(player == null) return null;
+
+	var nextPlayerChairno = (player.chairno + 1) % 4;;
+	
+	for(var i=0; i<this.players.length; i++) {
+		var p = this.players[i];
+		if(p != null && p.chairno == nextPlayerChairno) {
+			return p;
+		}
+	}
+
+	return null;
+}
+
+Table.prototype.broadcast = function(cmd_id, jsondata) {
+	for(var i=0; i<this.players.length; i++) {
+		var player = table.players[i];
+		if(player && player.socket) {
+			var tablestr = JSON.stringify(jsondata);
+			var backdata = {"cmd_id":cmd_id, "data": tablestr};
+			player.socket.sendText(JSON.stringify(backdata));
+		}
+	}	
+}
+
 Table.prototype.addPlayer = function(socket, uid,username) {
 	for(var i=0; i<this.players.length; i++) {
 		var player = this.players[i];
@@ -99,6 +192,7 @@ Table.prototype.addPlayer = function(socket, uid,username) {
 	var player = new Player();
 	player.reset();
 	player.socket = socket;
+	player.table = this;
 	player.uid = uid;
 	player.username = username;
 	player.chairno = this.players.length
@@ -129,10 +223,106 @@ Table.prototype.buildTableData = function() {
 		playerdata.handcards = Func.CopyArr(player.handcards);
 		tabledata.players.push(playerdata);
 	}
-
-	 
+ 
 	return tabledata;
 }
 
+Table.prototype.buildOutData = function(player, cardid,catchCardid) {
+	var data = {};
+	data.cardid = cardid;
+	data.catchCardid = catchCardid;
+
+	if(player) {
+		data.chairno = player.chairno;
+	}
+
+	if(catchCardid != Global.INVALID_CARDID && this.curPlayer != null) {
+		data.catchCardChairNO = this.curPlayer.chairno;
+	}
+	
+	return data;
+}
+
+Table.prototype.MoveToNextPlayer = function()
+{ 
+	this.curPlayer = this.getNextPlayer(this.curPlayer); 
+ 
+	return this.curPlayer; 
+}
+
+Table.prototype.onOutCard = function(uid, cardid) {
+	var player = this.getPlayerByUid(uid);
+
+	if(player == null) {
+		return false;
+	}
+
+	if(self.curPlayer == null) {
+		return false;
+	} 
+	
+	if(self.curPlayer.isMySelf(player) == false) {
+		return false;
+	}
+
+	if(player.canOutCard(cardid) == false) {
+		return false;
+	}
+
+	player.doOutCard(cardid);
+
+	var allguo = false;
+	for(var i=0; i<this.players.length; i++) {
+		var tempPlayer = this.players[i];
+		if(tempPlayer == null) continue;
+
+		tempPlayer.resetPGCHFlags();
+
+		if(tempPlayer.isMySelf(player)) {
+			player.setGuoState(true);
+			continue;
+		}
+
+		var dwPGCHFlag = 0;
+		if (Config.CanPeng) dwPGCHFlag |= Global.ACT_TYPE.ACT_PENG;
+		if (Config.CanMnGang) dwPGCHFlag |= Global.ACT_TYPE.ACT_MINGGANG;
+		if (Config.CanAnGang) dwPGCHFlag |= Global.ACT_TYPE.ACT_ANGANG;
+		if (Config.CanPnGang) dwPGCHFlag |= Global.ACT_TYPE.ACT_BUGANG;
+		if (Config.CanFangChong) dwPGCHFlag |= Global.ACT_TYPE.ACT_HU;
+		if (player.IsMyNext(tempPlayer))
+		{
+			if (Config.CanChi)
+				dwPGCHFlag |= Global.ACT_TYPE.ACT_CHI;
+		}
+
+		if(tempPlayer.calcPGCH(player, cardid, dwPGCHFlag)) {
+			allguo = false;
+			tempPlayer.setGuoState(false);
+		}
+		else {
+			tempPlayer.setGuoState(true);
+		}
+	}
+
+	this.setStatusAfterOut();
+	this.moveToNextPlayer();
+
+	var catchCardid = Global.INVALID_CARDID;
+	if(allguo == true) {
+		//begin catch card for next player
+		catchCardid = this.cartchOneCard(this.curPlayer);
+		if(catchCardid == Global.INVALID_CARDID) {
+			//game end
+			return;
+		}
+	}
+
+	this.notifyOutCard(player, cardID, catchCardid);
+}
+
+Table.prototype.notifyOutCard = function(player, cardid) {
+	var outdata = this.buildOutData(player, cardid, catchCardid);
+	this.broadcast(Global.CMD_ID.CMD_ID_OUTCARD, outdata);
+}
 
 module.exports = Table;

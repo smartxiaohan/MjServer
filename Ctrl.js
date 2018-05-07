@@ -69,25 +69,43 @@ Ctrl.onJoinFKTableReq = function(socket, data) {
 	var uid = data_json.uid;
 	var username = data_json.username;
 
-	var table = Game.enterTable(socket, tablenum, uid, username);
+	Game.onJoinFKTable(socket, tablenum, uid, username);
 
-	if(table != null)
-	{
-		//send to players on the table
-		for(var i=0; i<table.players.length; i++) {
-			var player = table.players[i];
-			if(player && player.socket) {
-				var tabledata = table.buildTableData();
-				var tablestr = JSON.stringify(tabledata);
-				var backdata = {"cmd_id":Global.CMD_ID.CMD_ID_JOIN_FKTABLE, "data": tablestr};
-				player.socket.sendText(JSON.stringify(backdata));
-			}
-		}
+	// var table = Game.enterTable(socket, tablenum, uid, username);
 
-		
-	}
-
-	
+	// if(table != null)
+	// {
+ 
+	// 	for(var i=0; i<table.players.length; i++) {
+	// 		var player = table.players[i];
+	// 		if(player && player.socket) {
+	// 			var tabledata = table.buildTableData();
+	// 			var tablestr = JSON.stringify(tabledata);
+	// 			var backdata = {"cmd_id":Global.CMD_ID.CMD_ID_JOIN_FKTABLE, "data": tablestr};
+	// 			player.socket.sendText(JSON.stringify(backdata));
+	// 		}
+	// 	}	
+	// }
 };
+
+Ctrl.onOutCardReq = function(socket, data) {
+	var data_str = data.data;
+	var data_json = JSON.parse(data_str);
+
+	var tablenum = data_json.tablenum;
+	var uid = data_json.uid;
+	var cardid = data_json.cardid;
+
+	Game.onOutCard(tablenum, uid, cardid);
+}
+
+Ctrl.onCatchCardReq = function(socket, data) {
+
+}
+
+Ctrl.onGuoCardReq = function(socket, data) {
+
+}
+ 
 
 module.exports = Ctrl;
