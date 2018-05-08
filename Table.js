@@ -283,7 +283,7 @@ Table.prototype.MoveToNextPlayer = function()
 	return this.curPlayer; 
 }
 
-Table.prototype.resetPGCHFlags()
+Table.prototype.resetPGCHFlags = function()
 {
 	for(var i=0; i<this.players.length; i++) {
 		var player = this.players[i];
@@ -456,6 +456,22 @@ Table.prototype.onPlayerReady = function(uid) {
 	var data = {};
 	data.chairno = player.chairno;
 	this.broadcast(Global.CMD_ID.CMD_ID_READY, data);
+
+	//if all ready then start game
+	if(this.players.length == 4) {
+		var readynum = 0;
+		for(var i=0; i<this.players.length; i++) {
+			var player = this.players[i];
+			if(player && player.ready == true) {
+				readynum++;
+			}
+		}
+
+		if(readynum == 4) {
+			this.startGame();
+		}
+	}
+	
 }
 
 Table.prototype.onOutCard = function(chairno, cardid) {

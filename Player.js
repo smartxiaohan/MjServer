@@ -73,7 +73,7 @@ Player.prototype.doOutCard = function(cardid) {
 	this.addOutCard(cardID);
 }
 
-Player.prototype.doCatchCard(cardid, fromTail)
+Player.prototype.doCatchCard = function(cardid, fromTail)
 {
 	this.addHandCard(cardID);
 	//this.canHuZiMo(cardID);
