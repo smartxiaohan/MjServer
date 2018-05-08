@@ -102,18 +102,30 @@ Ctrl.onOutCardReq = function(socket, data) {
 	var data_json = JSON.parse(data_str);
 
 	var tablenum = data_json.tablenum;
-	var uid = data_json.uid;
+	varchairnouid = data_json.chairno;
 	var cardid = data_json.cardid;
 
-	Game.onOutCard(tablenum, uid, cardid);
+	Game.onOutCard(tablenum, chairno, cardid);
 }
 
 Ctrl.onCatchCardReq = function(socket, data) {
+	var data_str = data.data;
+	var data_json = JSON.parse(data_str);
 
+	var tablenum = data_json.tablenum;
+	var chairno = data_json.chairno;
+ 
+	Game.onCatchCard(tablenum, chairno);
 }
 
 Ctrl.onGuoCardReq = function(socket, data) {
+	var data_str = data.data;
+	var data_json = JSON.parse(data_str);
 
+	var tablenum = data_json.tablenum;
+	var chairno = data_json.chairno;
+ 
+	Game.onGuoCard(tablenum, chairno);
 }
  
 

@@ -1,5 +1,7 @@
 var Global = {};
 
+Global.TABLE_MAX_NUM = 10;
+
 Global.INVALID_CARDID = 0;
 Global.INVALID_FACE = 0;
 Global.MJ_MAX_DEEPTH = 10000;
@@ -55,7 +57,14 @@ Global.ACT_TYPE =
 	"ACT_CATCH"		: 0x0400,		//抓牌	
 };
 
+Global.ACT_PRI = {
+	"ACT_PRI_CHI": 100,
+	"ACT_PRI_PENG": 200,
+	"ACT_PRI_GANG": 300,
+	"ACT_PRI_HU": 400,
+};
  
+
 Global.HU_TYPE = 
 {
 	"MJ_HU_FANG"		: 1,	// 放冲
@@ -124,6 +133,5 @@ Global.FACE = {
 	"MJ_FACE_BAI": 53,
 };
 
-Global.TABLE_MAX_NUM = 10;
 
 module.exports = Global;

@@ -27,6 +27,9 @@ Player.prototype.resetPGCHFlags = function() { dwPGCHFlags = Global.ACT_TYPE.ACT
 Player.prototype.getGuoState = function(){ return this.pass; }
 Player.prototype.setGuoState = function(bPass){ this.pass = bPass; }
 
+Player.prototype.setCurrentAction = function(act) { m_CurrentAction = act; }
+Player.prototype.getCurrentAction = function(){ return m_CurrentAction; }
+Player.prototype.resetCurrentAction = function() { m_CurrentAction.reset(); }
 
 Player.prototype.dealCard = function(cardid) {
 	this.handcards.push(cardid);
@@ -70,8 +73,25 @@ Player.prototype.doOutCard = function(cardid) {
 	this.addOutCard(cardID);
 }
 
+Player.prototype.doCatchCard(cardid, fromTail)
+{
+	this.addHandCard(cardID);
+	//this.canHuZiMo(cardID);
+}
+
+Player.prototype.doGuo = function() {
+	if (false == m_bPass)
+	{
+		m_bPass = true;
+	} 
+}
+
 Player.prototype.delHandCard = function(cardid) {
 	this.handcards.remove(cardid);
+}
+
+Player.prototype.addHandCard = function(cardid) {
+	this.handcards.push(cardid);
 }
 
 Player.prototype.addOutCard = function(cardid) {

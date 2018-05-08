@@ -47,6 +47,31 @@ class AnalyseUnit {
 	}
 }
 
+class Group {
+	constructor() {
+		this.reset();
+	}
+	
+	reset() {
+		this.baseid = 0;
+		this.cardids = new Array(0,0,0,0);
+	}
+}
+
+class Action {
+	constructor() {
+		this.reset();
+	}
+
+	reset() {
+		this.actid = 0;
+		this.group = new Group();
+		this.uSrcChair = -1;
+	}
+}
+
+Calc.Action = Action;
+
 class HuDetails {
 	constructor() {
 		this.reset();

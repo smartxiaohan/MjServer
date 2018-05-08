@@ -136,6 +136,16 @@ Table.prototype.getPlayerByUid = function(uid) {
 	return null;
 }
 
+Table.prototype.getPlayerByChairNO = function(chairno) {
+	for(var i=0; i<this.players.length; i++) {
+		var player = this.players[i];
+		if(player && player.chairno == chairno) {
+			return player;
+		}
+	}
+	return null;
+}
+
 // 获取前一个玩家
 Table.prototype.getPrePlayer = function(player)
 {
@@ -243,11 +253,196 @@ Table.prototype.buildOutData = function(player, cardid,catchCardid) {
 	return data;
 }
 
+Table.prototype.buildCatchData = function(player, cardid) {
+	var data = {};
+	data.cardid = cardid;
+
+	if(player) {
+		data.chairno = player.chairno;
+	}
+ 
+	return data;
+}
+
+
+Table.prototype.buildGuoData = function(player) {
+	var data = {};
+ 
+	if(player) {
+		data.chairno = player.chairno;
+	}
+ 
+	return data;
+}
+
+
 Table.prototype.MoveToNextPlayer = function()
 { 
 	this.curPlayer = this.getNextPlayer(this.curPlayer); 
  
 	return this.curPlayer; 
+}
+
+Table.prototype.resetPGCHFlags()
+{
+	for(var i=0; i<this.players.length; i++) {
+		var player = this.players[i];
+		if(player) {
+			player.resetCurrentAction();
+			player.resetPGCHFlags();
+		}
+	}
+}
+
+Table.prototype.catchFromHead = function()
+{
+	if (this.cardids.length <= 0)
+		return Global.INVALID_CARDID;
+
+	var cardID = this.cardids.shift();
+	return cardID;
+}
+
+Table.prototype.catchFromTail = function()
+{
+	if (this.cardids.length <= 0)
+		return Global.INVALID_CARDID;
+
+	var cardID = this.cardids.pop();
+	return cardID;
+}
+
+Table.prototype.catchOneCard = function(player, fromTail) {
+	var cardID = Global.INVALID_CARDID;
+	if (fromTail == false)
+	{
+		cardID = this.catchCardFromHead();
+	}
+	else
+	{
+		cardID = this.catchCardFromTail();
+	}
+
+	if (Global.INVALID_CARDID == cardID)
+	{
+		return Global.INVALID_CARDID;
+	}
+
+	player.doCatchCard(cardID, fromTail);
+
+	this.setCurrentPlayer(player);
+	this.setStatusAfterCatch();
+
+	return cardID;
+}
+
+Table.prototype.calcActPri = function(player, actid) {
+	var nPri = 0;
+	if (Func.IS_BIT_SET(actid, Global.ACT_TYPE.ACT_CHI))
+	{
+		nPri = Global.ACT_PRI.ACT_PRI_CHI;
+	}
+	if (Func.IS_BIT_SET(actid, Global.ACT_TYPE.ACT_PENG))
+	{
+		nPri = Global.ACT_PRI.ACT_PRI_PENG;
+	}
+	if (Func.IS_BIT_SET(actid, Global.ACT_TYPE.ACT_MINGGANG))
+	{
+		nPri = Global.ACT_PRI.ACT_PRI_GANG;
+	}
+	if (Func.IS_BIT_SET(actid, Global.ACT_TYPE.ACT_ANGANG))
+	{
+		nPri = Global.ACT_PRI.ACT_PRI_GANG;
+	}
+	if (Func.IS_BIT_SET(actid, Global.ACT_TYPE.ACT_BUGANG))
+	{
+		nPri = Global.ACT_PRI.ACT_PRI_GANG;
+	}
+	if (Func.IS_BIT_SET(actid, Global.ACT_TYPE.ACT_HU))
+	{
+		nPri = Global.ACT_PRI.ACT_PRI_HU;
+	}
+
+	if (nPri > 0)
+	{
+		var  tempPlayer = this.curPlayer;
+		if(tempPlayer) {
+			while (player.isMySelf(tempPlayer))
+			{
+				nPri--;
+				tempPlayer = this.getNextPlayer(tempPlayer);
+			}
+		}
+	}
+	
+	return nPri;
+}
+
+Table.prototype.doHighestRriAct = function() {
+	var doPlayer = null;
+
+	var nMaxPri = 0;
+	for (var i=0; i<this.players.length; i++)
+	{
+		var player = this.players[i];
+		if (player.getGuoState() == true)
+		{
+			var nPri = this.calcActPri(player, player.getCurrentAction().actid);
+			if (nPri > nMaxPri)
+			{
+				nMaxPri = nPri;
+				doPlayer = player;
+			}
+		}
+	}
+
+	for (var i=0; i<this.players.length; i++)
+	{ 
+		var player = this.players[i];
+		if (false == player.getGuoState())
+		{
+			var dwPGCHFlags = player.getPGCHFlags();
+			var wActIDs = new Array(Global.ACT_TYPE.ACT_CHI, Global.ACT_TYPE.ACT_PENG, Global.ACT_TYPE.ACT_MINGGANG, Global.ACT_TYPE.ACT_HU);
+			for (var j=0; j<wActIDs.length; j++)
+			{
+				var wActID = wActIDs[j];
+				if (false == Func.IS_BIT_SET(dwPGCHFlags, wActID)) continue;
+				var nPri = this.calcActPri(player, wActID);
+				if (nPri > nMaxPri)
+				{
+					return false;
+				}
+			}
+		}
+	}
+	if (null == doPlayer) return false;
+ 
+	var doAct = doPlayer.getCurrentAction();
+	switch (doAct.actid)
+	{
+	case Global.ACT_TYPE.ACT_CHI:
+		this.ChiCard(doPlayer, doAct.group);
+		return true;
+	case Global.ACT_TYPE.ACT_PENG:
+		this.PengCard(doPlayer, doAct.group);
+		return true;
+	case Global.ACT_TYPE.ACT_MINGGANG:
+		this.MingGangCard(doPlayer, doAct.group, !Func.IS_BIT_SET(m_dwStatus, Global.WAITING_STATUS.TS_WAITING_QIANG_MINGGANG));
+		return true;
+	case Global.ACT_TYPE.ACT_ANGANG:
+		this.AnGangCard(doPlayer, doAct.group, false);
+		return true;
+	case Global.ACT_TYPE.ACT_BUGANG:
+		this.BuGangCard(doPlayer, doAct.group, false);
+		return true;
+	case Global.ACT_TYPE.ACT_HU:
+		this.HuCard(doPlayer);
+		return true;
+	default:
+		return false;
+	}
+
+	return false;
 }
 
 Table.prototype.onPlayerReady = function(uid) {
@@ -263,8 +458,8 @@ Table.prototype.onPlayerReady = function(uid) {
 	this.broadcast(Global.CMD_ID.CMD_ID_READY, data);
 }
 
-Table.prototype.onOutCard = function(uid, cardid) {
-	var player = this.getPlayerByUid(uid);
+Table.prototype.onOutCard = function(chairno, cardid) {
+	var player = this.getPlayerByChairNO(chairno);
 
 	if(player == null) {
 		return false;
@@ -323,7 +518,7 @@ Table.prototype.onOutCard = function(uid, cardid) {
 	var catchCardid = Global.INVALID_CARDID;
 	if(allguo == true) {
 		//begin catch card for next player
-		catchCardid = this.cartchOneCard(this.curPlayer);
+		catchCardid = this.catchOneCard(this.curPlayer, false);
 		if(catchCardid == Global.INVALID_CARDID) {
 			//game end
 			return;
@@ -333,9 +528,70 @@ Table.prototype.onOutCard = function(uid, cardid) {
 	this.notifyOutCard(player, cardID, catchCardid);
 }
 
-Table.prototype.notifyOutCard = function(player, cardid) {
+Table.prototype.onCatchCard = function(chairno) {
+	var player = this.getPlayerByChairNO(chairno);
+
+	if(player == null) {
+		return false;
+	}
+
+	if(self.curPlayer == null) {
+		return false;
+	} 
+	
+	if(self.curPlayer.isMySelf(player) == false) {
+		return false;
+	}
+
+	var cardid = this.catchOneCard(player, false);
+	if(cardid == Global.INVALID_CARDID) {
+		//game end
+		return;
+	}
+	this.notifyCatchCard(player, cardid);
+}
+
+Table.prototype.onGuoCard = function(chairno) {
+	var player = this.getPlayerByChairNO(chairno);
+
+	if(player == null) {
+		return false;
+	}
+
+	player.doGuo();
+	this.notifyGuo(player);
+
+	var allGuo = true;
+	for(var i=0; i<this.players.length; i++) {	
+		var tempPlayer = this.players[i];
+		if (tempPlayer && tempPlayer.getGuoState() == true) {
+			allGuo = false;
+		}	
+	}
+
+	if(this.doHighestRriAct() == false) {
+		if(allguo == true && Func.IS_BIT_SET(m_dwStatus, Global.WAITING_STATUS.TS_WAITING_CATCH)) {
+			//catch card
+			if(this.curPlayer) {
+				this.onCatchCard(this.curPlayer.chairno);
+			}
+		}
+	}
+}
+
+Table.prototype.notifyOutCard = function(player, cardid, catchCardid) {
 	var outdata = this.buildOutData(player, cardid, catchCardid);
 	this.broadcast(Global.CMD_ID.CMD_ID_OUTCARD, outdata);
+}
+
+Table.prototype.notifyCatchCard = function(player, cardid) {
+	var catchdata = this.buildCatchData(player, cardid);
+	this.broadcast(Global.CMD_ID.CMD_ID_CATCHCARD, catchdata);
+}
+
+Table.prototype.notifyGuo = function(player) {
+	var guodata = this.buildGuoData(player);
+	this.broadcast(Global.CMD_ID.CMD_ID_CATCHCARD, guodata);
 }
 
 module.exports = Table;

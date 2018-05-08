@@ -142,10 +142,24 @@ Game.findTableByNum = function(tablenum) {
 	return null;
 }
 
-Game.onOutCard = function(tablenum, uid, cardid) {
+Game.onOutCard = function(tablenum, chairno, cardid) {
 	var table = Game.findTableByNum(tablenum);
 	if(table != null) {
-		table.onOutCard(uid, cardid);
+		table.onOutCard(chairno, cardid);
+	}
+}
+
+Game.onCatchCard = function(tablenum,chairno) {
+	var table = Game.findTableByNum(tablenum);
+	if(table != null) {
+		table.onCatchCard(chairno);
+	}
+}
+
+Game.onGuoCard = function(tablenum,chairno) {
+	var table = Game.findTableByNum(tablenum);
+	if(table != null) {
+		table.onGuoCard(chairno);
 	}
 }
 
