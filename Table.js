@@ -101,6 +101,13 @@ Table.prototype.startGame = function() {
 	this.shuffleCards();
 	this.calcBankerBeforeGame();
 	this.dealCards(); 
+	this.notifyTableInfo();
+}
+
+Table.prototype.notifyTableInfo = function() {
+	var tabledata = this.buildTableData();
+	var cmd_id = Global.CMD_ID.CMD_ID_TABLEINFO;
+	this.broadcast(cmd_id, tabledata);
 }
 
 Table.prototype.dealCards =  function() {
@@ -229,6 +236,7 @@ Table.prototype.buildTableData = function() {
 		playerdata.uid = player.uid;
 		playerdata.username = player.username;
 		playerdata.chairno = player.chairno;  
+		playerdata.ready = player.ready;
 
 		playerdata.handcards = Func.CopyArr(player.handcards);
 		tabledata.players.push(playerdata);

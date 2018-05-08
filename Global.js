@@ -18,6 +18,7 @@ Global.CMD_ID = {
 	"CMD_ID_CREATE_FKTABLE": 1001,
 	"CMD_ID_JOIN_FKTABLE": 1002,
 	"CMD_ID_READY": 1003,
+	"CMD_ID_TABLEINFO": 1004,
 	//////////////base 
 
 
