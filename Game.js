@@ -90,6 +90,13 @@ Game.onJoinFKTable = function(socket, tablenum, uid, username) {
 	}
 }
 
+Game.onLoginUser = function(socket, uid) {
+	var table = Game.findTableByUid(uid);
+	if(table && table != null) {
+		table.onLoginUser(socket,uid);
+	}
+}
+
 Game.onReady = function(tablenum, uid) {
 	var table = Game.findTableByNum(tablenum);
 	if(table != null) {
@@ -137,6 +144,22 @@ Game.findTableByNum = function(tablenum) {
 		if(table.tablenum == tablenum)
 		{
 			return  table;
+		}
+	}
+	return null;
+}
+
+Game.findTableByUid = function(uid) {
+	for(var i=0; i<Global.TABLE_MAX_NUM; i++) 
+	{
+		var table = this.tables[i];
+		if(table)
+		{
+			for(var j=0; j<table.players.length; j++) {
+				if(table.players[j] && table.players[j].uid == uid) {
+					return table;
+				}
+			}
 		}
 	}
 	return null;

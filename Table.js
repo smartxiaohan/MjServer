@@ -102,6 +102,8 @@ Table.prototype.startGame = function() {
 	this.calcBankerBeforeGame();
 	this.dealCards(); 
 
+	this.setCurrentPlayer(this.getPlayerByChairNO(this.banker));
+
 	this.changeState();
 	this.notifyTableInfo();
 }
@@ -239,6 +241,11 @@ Table.prototype.buildTableData = function() {
 	tabledata.host = this.host;   
 	tabledata.banker = this.banker;   
 	tabledata.status = this.status;
+	tabledata.curplayer = -1;
+
+	if( this.curPlayer &&  this.curPlayer !=null) {
+		tabledata.curplayer = this.curPlayer.chairno;
+	}
 
 	tabledata.players = [];
 
@@ -466,6 +473,24 @@ Table.prototype.doHighestRriAct = function() {
 	return false;
 }
 
+Table.prototype.onLoginUser = function(socket, uid) {
+	var player = this.getPlayerByUid(uid);
+
+	if(player == null) {
+		return false;
+	}
+
+	player.socket = socket;
+
+	var tabledata = this.buildTableData();
+	var cmd_id = Global.CMD_ID.CMD_ID_TABLEINFO;
+
+	var tablestr = JSON.stringify(tabledata);
+	var backdata = {"cmd_id":cmd_id, "data": tablestr};
+	socket.sendText(JSON.stringify(backdata));
+ 
+}
+
 Table.prototype.onPlayerReady = function(uid) {
 	var player = this.getPlayerByUid(uid);
 
@@ -502,11 +527,11 @@ Table.prototype.onOutCard = function(chairno, cardid) {
 		return false;
 	}
 
-	if(self.curPlayer == null) {
+	if(this.curPlayer == null) {
 		return false;
 	} 
 	
-	if(self.curPlayer.isMySelf(player) == false) {
+	if(this.curPlayer.isMySelf(player) == false) {
 		return false;
 	}
 
@@ -572,11 +597,11 @@ Table.prototype.onCatchCard = function(chairno) {
 		return false;
 	}
 
-	if(self.curPlayer == null) {
+	if(this.curPlayer == null) {
 		return false;
 	} 
 	
-	if(self.curPlayer.isMySelf(player) == false) {
+	if(this.curPlayer.isMySelf(player) == false) {
 		return false;
 	}
 

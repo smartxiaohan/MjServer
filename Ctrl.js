@@ -24,6 +24,13 @@ Ctrl.onLoginReq = function(socket, data) {
 			var logindata = {"name": name, "uid": uid};
 			var backdata = {"cmd_id":Global.CMD_ID.CMD_ID_LOGIN, "data": JSON.stringify(logindata)};
 			socket.sendText(JSON.stringify(backdata));
+
+			setTimeout(function() {
+
+				Game.onLoginUser(socket, uid);
+			
+			}, 1000);
+			
 		}
 
 		if(find == false){
