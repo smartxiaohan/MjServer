@@ -102,7 +102,7 @@ Ctrl.onOutCardReq = function(socket, data) {
 	var data_json = JSON.parse(data_str);
 
 	var tablenum = data_json.tablenum;
-	varchairnouid = data_json.chairno;
+	var chairno = data_json.chairno;
 	var cardid = data_json.cardid;
 
 	Game.onOutCard(tablenum, chairno, cardid);

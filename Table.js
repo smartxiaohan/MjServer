@@ -101,7 +101,20 @@ Table.prototype.startGame = function() {
 	this.shuffleCards();
 	this.calcBankerBeforeGame();
 	this.dealCards(); 
+
+	this.changeState();
 	this.notifyTableInfo();
+}
+
+Table.prototype.changeState = function() {
+	for(var i=0; i<this.getPlayersNum(); i++) {
+		var player = this.players[i];
+		if(player) {
+			player.ready = false;
+		}
+	}
+	
+	this.status = Table.STATUS_PLAY;
 }
 
 Table.prototype.notifyTableInfo = function() {
