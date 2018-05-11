@@ -23,6 +23,6 @@ var server = ws.createServer(function(conn) {
 	conn.on("error", function(code, reason) {
 		console.log("error code="+code+"reason=="+reason);
 	});
-}).listen(8001,"118.187.5.6");
+}).listen(8001,"0.0.0.0");
 
 game.init();
