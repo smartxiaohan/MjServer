@@ -9,11 +9,18 @@ var server = ws.createServer(function(conn) {
 	conn.on("text", function(str) {
 		console.log("received " + str);
 		
-		var data = JSON.parse(str);
-		var cmd_id = data.cmd_id;
-		
-		console.log("cmd_id == " + cmd_id.toString());
-        route.receiveRequest(conn, cmd_id, data);
+		if (typeof str === 'string') {
+			var data = JSON.parse(str);
+
+			if(data && data.cmd_id && typeof data.cmd_id === 'number')
+			{
+				var cmd_id = data.cmd_id;
+			
+				console.log("cmd_id == " + cmd_id.toString());
+				route.receiveRequest(conn, cmd_id, data);
+			}
+			
+		}	
 	});
 	
 	conn.on("close", function (code, reason) {
