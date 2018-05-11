@@ -19,10 +19,10 @@ ALTER TABLE `tb_user`
 
 db.query = function sqlback(sqlstr, callback) {
 	var conn = mysql.createConnection({
-		host:'localhost',
-		user:'root',
-		password:'123456',
-		database:'mjgame',
+		host:'43.226.44.154',
+		user:'mysql180510bb9f',
+		password:'bb9f7da7Me',
+		database:'mysql180510bb9f_db',
 		port:3306
 	});
 	

@@ -5,8 +5,7 @@ Func.Log = function(str){
 };
 
 Func.RandomTableNum = function() {
-	var ran = Math.random();
-	return Math.floor(ran*10000+1);
+	return Math.floor(Math.random()*9000) + 1000;
 };
 
 //include min and max

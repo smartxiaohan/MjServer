@@ -35,9 +35,24 @@ Ctrl.onLoginReq = function(socket, data) {
 
 		if(find == false){
 			Db.query("select * from tb_user order by uid desc limit 1", function(rs, f){
+				var found = false;
 				for(var r of rs){
+					found = true;
+
 					var uid = r["uid"];
 					uid = uid + 1;
+					var nowtime = new Date().getTime();
+					var password = "123456";
+					var sql = "insert into tb_user values('"+uid+"','" + self.name + "','" + password + "','" +nowtime + "')";
+					Db.query(sql, null);
+
+					var logindata = {"name": self.name, "uid": uid};
+					var backdata = {"cmd_id":Global.CMD_ID.CMD_ID_LOGIN, "data": JSON.stringify(logindata)};
+					socket.sendText(JSON.stringify(backdata));
+				}
+
+				if(found == false) {
+					var uid = 1000;
 					var nowtime = new Date().getTime();
 					var password = "123456";
 					var sql = "insert into tb_user values('"+uid+"','" + self.name + "','" + password + "','" +nowtime + "')";
